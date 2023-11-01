@@ -1,0 +1,19 @@
+import subprocess
+
+def generate_video_with_timecode(output_file="test_video_with_timecode.mov"):
+    command = [
+        "ffmpeg",
+        "-f", "lavfi", "-i", "color=c=blue:s=1280x720:d=5",
+        "-f", "lavfi", "-i", "aevalsrc=0.5*sin(440*2*PI*t)|0.5*sin(440*2*PI*t):s=44100:d=5",
+        "-vf", "drawtext=text='Test Video':fontsize=24:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2",
+        "-timecode", "00:01:57:00",
+        "-metadata:s:v:0", "timecode=00:01:57:00",
+        "-c:a", "aac", 
+        "-strict", "experimental",
+        "-y", output_file
+    ]
+    
+    subprocess.run(command)
+
+if __name__ == "__main__":
+    generate_video_with_timecode()
