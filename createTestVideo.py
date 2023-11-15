@@ -1,7 +1,7 @@
 import subprocess
 import time
 
-def generate_video_with_timecode(output_file="test_video_with_timecode.mov"):
+def generate_video_with_timecode(output_file="test_video_with_timecode-jp110723v4.mov"):
     # Get current timestamp for uniqueness
     timestamp = str(time.time())
     
