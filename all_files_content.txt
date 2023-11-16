@@ -1,0 +1,1233 @@
+File: ./all_files_content.txt
+
+
+
+File: ./extractAudio.py
+
+import sys
+from moviepy.editor import VideoFileClip
+
+def extract_audio(video_path):
+    audio_path = video_path.rsplit('.', 1)[0] + '.wav'
+    video_clip = VideoFileClip(video_path)
+    audio_clip = video_clip.audio
+    audio_clip.write_audiofile(audio_path)
+    audio_clip.close()
+    video_clip.close()
+    print(f"Extracted audio to {audio_path}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python extractAudio.py <video_file>")
+    else:
+        video_file_path = sys.argv[1]
+        extract_audio(video_file_path)
+
+File: ./extractVideo.py
+
+import sys
+from moviepy.editor import VideoFileClip
+import os
+
+def remove_audio_from_video(input_video_path):
+    """
+    Remove all audio tracks from an MP4 video file.
+
+    Args:
+    input_video_path (str): Path to the input video file.
+    """
+    # Extracting filename and extension
+    base, ext = os.path.splitext(input_video_path)
+    output_video_path = f"{base}_noAudio{ext}"
+
+    # Load the video file
+    video = VideoFileClip(input_video_path)
+    
+    # Remove audio
+    video_no_audio = video.without_audio()
+    
+    # Write the result to the output file
+    video_no_audio.write_videofile(output_video_path, codec="libx264", audio_codec=None)
+    print(f"Output saved as {output_video_path}")
+
+if __name__ == "__main__":
+    if len(sys.argv) != 2:
+        print("Usage: python script.py <path_to_video>")
+        sys.exit(1)
+
+    input_video = sys.argv[1]
+    remove_audio_from_video(input_video)
+
+
+File: ./createTestVideo.py
+
+import subprocess
+import time
+
+def generate_video_with_timecode(output_file="test_video_with_timecode-jp110723v4.mov"):
+    # Get current timestamp for uniqueness
+    timestamp = str(time.time())
+    
+    command = [
+        "ffmpeg",
+        "-f", "lavfi", "-i", "color=c=blue:s=1280x720:d=5",
+        "-f", "lavfi", "-i", "aevalsrc=0.5*sin(440*2*PI*t)|0.5*sin(440*2*PI*t):s=44100:d=5",
+        "-f", "lavfi", "-i", "aevalsrc=0.5*sin(550*2*PI*t)|0.5*sin(550*2*PI*t):s=44100:d=5",
+        "-f", "lavfi", "-i", "aevalsrc=0.5*sin(660*2*PI*t)|0.5*sin(660*2*PI*t):s=44100:d=5",
+        "-f", "lavfi", "-i", "aevalsrc=0.5*sin(770*2*PI*t)|0.5*sin(770*2*PI*t):s=44100:d=5",
+        "-vf", f"drawtext=text='Test Video':fontsize=24:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2,drawtext=text='{timestamp}':fontsize=0:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2",
+        "-timecode", "00:01:57:00",
+        "-metadata:s:v:0", "timecode=00:01:57:00",
+        "-c:a", "aac", 
+        "-strict", "experimental",
+        "-map", "0:v",
+        "-map", "1:a",
+        "-map", "2:a",
+        "-map", "3:a",
+        "-map", "4:a",
+        "-y", output_file
+    ]
+    
+    subprocess.run(command)
+
+if __name__ == "__main__":
+    generate_video_with_timecode()
+
+
+File: ./compressVideo.py
+
+import subprocess
+import sys
+import os
+
+def compress_video(input_path, output_path, target_size_MB, crf_value=23):
+    """
+    Compresses a video file to a target size with as much quality retention as possible.
+    
+    Args:
+    input_path (str): Path to the input video file.
+    output_path (str): Path where the compressed video will be saved.
+    target_size_MB (int): Target size in megabytes for the output video.
+    crf_value (int): Constant Rate Factor for quality (default is 23, the range is 0-51, where lower numbers are higher quality).
+    """
+    
+    # Calculate target bitrate based on the desired size (in bits)
+    duration_seconds = float(subprocess.check_output(
+        f'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 "{input_path}"',
+        shell=True))
+    target_total_bitrate = (target_size_MB * 8 * 1024 * 1024) / duration_seconds
+    
+    # Audio bitrate to subtract from target total bitrate to get video bitrate
+    audio_bitrate = 128000  # This is a good default for decent quality audio
+
+    # Calculate video bitrate
+    video_bitrate = target_total_bitrate - audio_bitrate
+
+    if video_bitrate <= 0:
+        print("Error: Target size too low to accommodate even audio bitrate.")
+        sys.exit(1)
+    
+    # Build and run ffmpeg command
+    cmd = (
+        f'ffmpeg -i "{input_path}" -b:v {int(video_bitrate)} -crf {crf_value} '
+        f'-b:a {int(audio_bitrate)} -preset slower "{output_path}"'
+    )
+    subprocess.run(cmd, shell=True)
+    
+    # Verify that file has been created
+    if not os.path.isfile(output_path):
+        print("Error: Compression failed, output file not created.")
+        sys.exit(1)
+    else:
+        print(f"Compression successful. File saved at {output_path}")
+
+if __name__ == "__main__":
+    # Parse command line arguments
+    if len(sys.argv) != 3:
+        print("Usage: python compress_video.py input_path target_size_MB")
+        sys.exit(1)
+
+    input_path = sys.argv[1]
+    target_size_MB = int(sys.argv[2])
+    
+    # Output path is the same as the input with "_compressed" appended
+    base, ext = os.path.splitext(input_path)
+    output_path = f"{base}_compressed{ext}"
+
+    compress_video(input_path, output_path, target_size_MB)
+
+
+File: ./listAllRepos.py
+
+import subprocess
+import csv
+
+# Function to get the list of repositories from the GitHub CLI
+def get_repo_list(org_name):
+    # Run the GitHub CLI command and capture the output
+    result = subprocess.run(
+        ["gh", "repo", "list", org_name, "--limit", "1000"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True
+    )
+    
+    # Check for errors
+    if result.stderr:
+        raise Exception("Error fetching repository list: " + result.stderr)
+    
+    # Split the output by new lines to get individual repository details
+    repo_lines = result.stdout.strip().split('\n')
+    
+    # Extract the repository names
+    repo_names = [line.split('\t')[0].split('/')[-1] for line in repo_lines if line]
+    
+    return repo_names
+
+# Function to write the repository names into a CSV file with three columns
+def write_repos_to_csv(repos, csv_file_path):
+    # Calculate the number of rows needed for the CSV
+    num_rows = len(repos) // 3 + (1 if len(repos) % 3 else 0)
+
+    # Create the CSV rows
+    csv_rows = [repos[i*3:(i+1)*3] for i in range(num_rows)]
+
+    # Ensure each row has 3 columns, filling in with empty strings if necessary
+    for row in csv_rows:
+        while len(row) < 3:
+            row.append("")
+
+    # Write the data to a CSV file
+    with open(csv_file_path, mode='w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(csv_rows)
+
+# Replace '[org-name]' with your organization name
+org_name = 'workflow-intelligence-nexus'
+
+# Define the CSV file path
+csv_file_path = 'win_repos.csv'
+
+# Get the repository list
+repo_list = get_repo_list(org_name)
+
+# Write the repository names to a CSV file
+write_repos_to_csv(repo_list, csv_file_path)
+
+print(f"The CSV file has been created at {csv_file_path}")
+
+
+File: ./createTestVid24.py
+
+import subprocess
+import time
+
+def generate_video_with_timecode(output_file="test_video_with_timecodeAnd24tr.mov"):
+    # Get current timestamp for uniqueness
+    timestamp = str(time.time())
+
+    # Base command for video and text overlay
+    command = [
+        "ffmpeg",
+        "-f", "lavfi", "-i", "color=c=blue:s=1280x720:d=5",
+        "-vf", f"drawtext=text='Test Video':fontsize=24:fontcolor=white:x=(w-text_w)/2:y=(h-text_h)/2,drawtext=text='{timestamp}':fontsize=0:fontcolor=white:x=0:y=0",
+        "-timecode", "00:01:57:00",
+        "-metadata:s:v:0", "timecode=00:01:57:00",
+        "-c:v", "libx264",
+    ]
+
+    # Add audio tracks with different frequencies
+    base_frequency = 440  # A4 note frequency in Hz
+    for i in range(1, 25):  # 24 audio tracks
+        frequency = base_frequency + (i * 10)  # Increment frequency by 10 Hz for each track
+        command.extend([
+            "-f", "lavfi", "-i", f"aevalsrc=0.5*sin({frequency}*2*PI*t):s=44100:d=5"
+        ])
+
+    # Map audio tracks
+    for i in range(24):  # 24 audio tracks
+        command.extend(["-map", str(i + 1)])
+
+    # Global options for audio
+    command.extend([
+        "-c:a", "aac",
+        "-strict", "experimental",
+        "-y", output_file
+    ])
+
+    subprocess.run(command)
+
+if __name__ == "__main__":
+    generate_video_with_timecode()
+
+
+File: ./.git/ORIG_HEAD
+
+75531d33ea633a03c4a25d7f82d3402474ae8626
+
+
+File: ./.git/config
+
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = true
+[remote "origin"]
+	url = https://github.com/trezero/video-tools.git
+	fetch = +refs/heads/*:refs/remotes/origin/*
+[branch "main"]
+	remote = origin
+	merge = refs/heads/main
+
+
+File: ./.git/HEAD
+
+ref: refs/heads/main
+
+
+File: ./.git/description
+
+Unnamed repository; edit this file 'description' to name the repository.
+
+
+File: ./.git/packed-refs
+
+# pack-refs with: peeled fully-peeled sorted 
+efda40fef012dc836b194cc26d0cd52c7c329c8c refs/remotes/origin/main
+
+
+File: ./.git/COMMIT_EDITMSG
+
+Added list repos
+
+
+File: ./.git/FETCH_HEAD
+
+75531d33ea633a03c4a25d7f82d3402474ae8626		branch 'main' of https://github.com/trezero/video-tools
+
+
+File: ./.git/objects/b5/7d62369bee1558e2cbf360dacf5269076cb60d
+
+x5��n�0D;�+d�+��t��tjڵPl�R+��H�u����H�ysx��z��h�;Ft$@�[�%�a��cC�e�js�u8�8E�X��C��F1xX��z��:}]@��l0�VEY�e�f;.N9OV-�W��1���@|O�F�	��R
+�Eh��0�6�R�Uh��yX|.���Wl$��q�2������&���U��]2�����0O�<��$��� I�u#OΦs�<��vƥ��K�@�P��B��܋�
+
+File: ./.git/objects/75/531d33ea633a03c4a25d7f82d3402474ae8626
+
+x��A� E]s������ݺ�
+S��-
+ō��+�W?/�y?�e� �C�"࣌1:�����݈nrYk
+N(7�j�*k�)�8$��$'/Y"f4^[��w4g�ګT��^VxH�p�¯�r}.<�O�,0�{��Z8꠵��k��R�R��yoPe+���Ga
+
+File: ./.git/objects/14/2c7af05e671f4fa13b4de7e9c3540b498e32ad
+
+xmQ�j�0��_�咄
+�z)�`���K)�M�V����҅��7$+�Q�==���6��
+5F[�w����Fw���X��.�U��H�"�X�5�����B~V��n #�)�25��0��:��g)O�a���p)?�.e�Y� �㺴X8\�����W~��1�Z�3�y���Z*�0����e�Xj}V'�1���5|ϓ��1�A�V6($B4�Z!�S��Y��K{�r�-`�!�h��;y�-�ޟt;%�<�M�q�ᮧ`9�P9�������o�ڏ�Q��C����S�+
+
+File: ./.git/info/exclude
+
+# git ls-files --others --exclude-from=.git/info/exclude
+# Lines that start with '#' are comments.
+# For a project mostly in C, the following would be a good set of
+# exclude patterns (uncomment them if you want to use them):
+# *.[oa]
+# *~
+
+
+File: ./.git/logs/HEAD
+
+0000000000000000000000000000000000000000 efda40fef012dc836b194cc26d0cd52c7c329c8c Jason Perr <trezero@gmail.com> 1698878954 -0700	clone: from https://github.com/trezero/video-tools.git
+efda40fef012dc836b194cc26d0cd52c7c329c8c 47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 Jason Perr <trezero@gmail.com> 1698879110 -0700	commit: Updated with v1
+47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 b5ad9bd454cf39305d135963b365f8cd984de974 Jason Perr <trezero@gmail.com> 1698879343 -0700	commit: Able to generate video with tone and embedded TC
+b5ad9bd454cf39305d135963b365f8cd984de974 3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 Jason Perr <trezero@gmail.com> 1698879362 -0700	commit: Updated to create 4 tracks of audio
+3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 141bda0acde1be5829e5c60e4d37c359dbbc2e91 Jason Perr <trezero@gmail.com> 1699045219 -0700	commit: updated
+141bda0acde1be5829e5c60e4d37c359dbbc2e91 b8fc6d2337efd5efec2f21503128ec2180af15a2 Jason Perr <trezero@gmail.com> 1699046610 -0700	commit: Updated so that every generation is unique, only need to change filename now for unique md5
+b8fc6d2337efd5efec2f21503128ec2180af15a2 75531d33ea633a03c4a25d7f82d3402474ae8626 Jason Perr <trezero@gmail.com> 1700009633 -0800	commit: Added list repos
+
+
+File: ./.git/logs/refs/heads/main
+
+0000000000000000000000000000000000000000 efda40fef012dc836b194cc26d0cd52c7c329c8c Jason Perr <trezero@gmail.com> 1698878954 -0700	clone: from https://github.com/trezero/video-tools.git
+efda40fef012dc836b194cc26d0cd52c7c329c8c 47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 Jason Perr <trezero@gmail.com> 1698879110 -0700	commit: Updated with v1
+47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 b5ad9bd454cf39305d135963b365f8cd984de974 Jason Perr <trezero@gmail.com> 1698879343 -0700	commit: Able to generate video with tone and embedded TC
+b5ad9bd454cf39305d135963b365f8cd984de974 3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 Jason Perr <trezero@gmail.com> 1698879362 -0700	commit: Updated to create 4 tracks of audio
+3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 141bda0acde1be5829e5c60e4d37c359dbbc2e91 Jason Perr <trezero@gmail.com> 1699045219 -0700	commit: updated
+141bda0acde1be5829e5c60e4d37c359dbbc2e91 b8fc6d2337efd5efec2f21503128ec2180af15a2 Jason Perr <trezero@gmail.com> 1699046610 -0700	commit: Updated so that every generation is unique, only need to change filename now for unique md5
+b8fc6d2337efd5efec2f21503128ec2180af15a2 75531d33ea633a03c4a25d7f82d3402474ae8626 Jason Perr <trezero@gmail.com> 1700009633 -0800	commit: Added list repos
+
+
+File: ./.git/logs/refs/remotes/origin/HEAD
+
+0000000000000000000000000000000000000000 efda40fef012dc836b194cc26d0cd52c7c329c8c Jason Perr <trezero@gmail.com> 1698878954 -0700	clone: from https://github.com/trezero/video-tools.git
+
+
+File: ./.git/logs/refs/remotes/origin/main
+
+efda40fef012dc836b194cc26d0cd52c7c329c8c 47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 Jason Perr <trezero@gmail.com> 1698879130 -0700	update by push
+47fb2606fab1c8d0c91752c9b0d2032b9a445ec6 3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 Jason Perr <trezero@gmail.com> 1698879383 -0700	update by push
+3f5c6fd3bb3b1f056e47e0c4eae75c68fe7bd2d7 141bda0acde1be5829e5c60e4d37c359dbbc2e91 Jason Perr <trezero@gmail.com> 1699045228 -0700	update by push
+141bda0acde1be5829e5c60e4d37c359dbbc2e91 b8fc6d2337efd5efec2f21503128ec2180af15a2 Jason Perr <trezero@gmail.com> 1699046616 -0700	update by push
+b8fc6d2337efd5efec2f21503128ec2180af15a2 75531d33ea633a03c4a25d7f82d3402474ae8626 Jason Perr <trezero@gmail.com> 1700009644 -0800	update by push
+
+
+File: ./.git/hooks/commit-msg.sample
+
+#!/bin/sh
+#
+# An example hook script to check the commit log message.
+# Called by "git commit" with one argument, the name of the file
+# that has the commit message.  The hook should exit with non-zero
+# status after issuing an appropriate message if it wants to stop the
+# commit.  The hook is allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "commit-msg".
+
+# Uncomment the below to add a Signed-off-by line to the message.
+# Doing this in a hook is a bad idea in general, but the prepare-commit-msg
+# hook is more suited to it.
+#
+# SOB=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# grep -qs "^$SOB" "$1" || echo "$SOB" >> "$1"
+
+# This example catches duplicate Signed-off-by lines.
+
+test "" = "$(grep '^Signed-off-by: ' "$1" |
+	 sort | uniq -c | sed -e '/^[ 	]*1[ 	]/d')" || {
+	echo >&2 Duplicate Signed-off-by lines.
+	exit 1
+}
+
+
+File: ./.git/hooks/pre-rebase.sample
+
+#!/bin/sh
+#
+# Copyright (c) 2006, 2008 Junio C Hamano
+#
+# The "pre-rebase" hook is run just before "git rebase" starts doing
+# its job, and can prevent the command from running by exiting with
+# non-zero status.
+#
+# The hook is called with the following parameters:
+#
+# $1 -- the upstream the series was forked from.
+# $2 -- the branch being rebased (or empty when rebasing the current branch).
+#
+# This sample shows how to prevent topic branches that are already
+# merged to 'next' branch from getting rebased, because allowing it
+# would result in rebasing already published history.
+
+publish=next
+basebranch="$1"
+if test "$#" = 2
+then
+	topic="refs/heads/$2"
+else
+	topic=`git symbolic-ref HEAD` ||
+	exit 0 ;# we do not interrupt rebasing detached HEAD
+fi
+
+case "$topic" in
+refs/heads/??/*)
+	;;
+*)
+	exit 0 ;# we do not interrupt others.
+	;;
+esac
+
+# Now we are dealing with a topic branch being rebased
+# on top of master.  Is it OK to rebase it?
+
+# Does the topic really exist?
+git show-ref -q "$topic" || {
+	echo >&2 "No such branch $topic"
+	exit 1
+}
+
+# Is topic fully merged to master?
+not_in_master=`git rev-list --pretty=oneline ^master "$topic"`
+if test -z "$not_in_master"
+then
+	echo >&2 "$topic is fully merged to master; better remove it."
+	exit 1 ;# we could allow it, but there is no point.
+fi
+
+# Is topic ever merged to next?  If so you should not be rebasing it.
+only_next_1=`git rev-list ^master "^$topic" ${publish} | sort`
+only_next_2=`git rev-list ^master           ${publish} | sort`
+if test "$only_next_1" = "$only_next_2"
+then
+	not_in_topic=`git rev-list "^$topic" master`
+	if test -z "$not_in_topic"
+	then
+		echo >&2 "$topic is already up to date with master"
+		exit 1 ;# we could allow it, but there is no point.
+	else
+		exit 0
+	fi
+else
+	not_in_next=`git rev-list --pretty=oneline ^${publish} "$topic"`
+	/usr/bin/perl -e '
+		my $topic = $ARGV[0];
+		my $msg = "* $topic has commits already merged to public branch:\n";
+		my (%not_in_next) = map {
+			/^([0-9a-f]+) /;
+			($1 => 1);
+		} split(/\n/, $ARGV[1]);
+		for my $elem (map {
+				/^([0-9a-f]+) (.*)$/;
+				[$1 => $2];
+			} split(/\n/, $ARGV[2])) {
+			if (!exists $not_in_next{$elem->[0]}) {
+				if ($msg) {
+					print STDERR $msg;
+					undef $msg;
+				}
+				print STDERR " $elem->[1]\n";
+			}
+		}
+	' "$topic" "$not_in_next" "$not_in_master"
+	exit 1
+fi
+
+<<\DOC_END
+
+This sample hook safeguards topic branches that have been
+published from being rewound.
+
+The workflow assumed here is:
+
+ * Once a topic branch forks from "master", "master" is never
+   merged into it again (either directly or indirectly).
+
+ * Once a topic branch is fully cooked and merged into "master",
+   it is deleted.  If you need to build on top of it to correct
+   earlier mistakes, a new topic branch is created by forking at
+   the tip of the "master".  This is not strictly necessary, but
+   it makes it easier to keep your history simple.
+
+ * Whenever you need to test or publish your changes to topic
+   branches, merge them into "next" branch.
+
+The script, being an example, hardcodes the publish branch name
+to be "next", but it is trivial to make it configurable via
+$GIT_DIR/config mechanism.
+
+With this workflow, you would want to know:
+
+(1) ... if a topic branch has ever been merged to "next".  Young
+    topic branches can have stupid mistakes you would rather
+    clean up before publishing, and things that have not been
+    merged into other branches can be easily rebased without
+    affecting other people.  But once it is published, you would
+    not want to rewind it.
+
+(2) ... if a topic branch has been fully merged to "master".
+    Then you can delete it.  More importantly, you should not
+    build on top of it -- other people may already want to
+    change things related to the topic as patches against your
+    "master", so if you need further changes, it is better to
+    fork the topic (perhaps with the same name) afresh from the
+    tip of "master".
+
+Let's look at this example:
+
+		   o---o---o---o---o---o---o---o---o---o "next"
+		  /       /           /           /
+		 /   a---a---b A     /           /
+		/   /               /           /
+	       /   /   c---c---c---c B         /
+	      /   /   /             \         /
+	     /   /   /   b---b C     \       /
+	    /   /   /   /             \     /
+    ---o---o---o---o---o---o---o---o---o---o---o "master"
+
+
+A, B and C are topic branches.
+
+ * A has one fix since it was merged up to "next".
+
+ * B has finished.  It has been fully merged up to "master" and "next",
+   and is ready to be deleted.
+
+ * C has not merged to "next" at all.
+
+We would want to allow C to be rebased, refuse A, and encourage
+B to be deleted.
+
+To compute (1):
+
+	git rev-list ^master ^topic next
+	git rev-list ^master        next
+
+	if these match, topic has not merged in next at all.
+
+To compute (2):
+
+	git rev-list master..topic
+
+	if this is empty, it is fully merged to "master".
+
+DOC_END
+
+
+File: ./.git/hooks/pre-commit.sample
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git commit" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message if
+# it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-commit".
+
+if git rev-parse --verify HEAD >/dev/null 2>&1
+then
+	against=HEAD
+else
+	# Initial commit: diff against an empty tree object
+	against=$(git hash-object -t tree /dev/null)
+fi
+
+# If you want to allow non-ASCII filenames set this variable to true.
+allownonascii=$(git config --type=bool hooks.allownonascii)
+
+# Redirect output to stderr.
+exec 1>&2
+
+# Cross platform projects tend to avoid non-ASCII filenames; prevent
+# them from being added to the repository. We exploit the fact that the
+# printable range starts at the space character and ends with tilde.
+if [ "$allownonascii" != "true" ] &&
+	# Note that the use of brackets around a tr range is ok here, (it's
+	# even required, for portability to Solaris 10's /usr/bin/tr), since
+	# the square bracket bytes happen to fall in the designated range.
+	test $(git diff --cached --name-only --diff-filter=A -z $against |
+	  LC_ALL=C tr -d '[ -~]\0' | wc -c) != 0
+then
+	cat <<\EOF
+Error: Attempt to add a non-ASCII file name.
+
+This can cause problems if you want to work with people on other platforms.
+
+To be portable it is advisable to rename the file.
+
+If you know what you are doing you can disable this check using:
+
+  git config hooks.allownonascii true
+EOF
+	exit 1
+fi
+
+# If there are whitespace errors, print the offending file names and fail.
+exec git diff-index --check --cached $against --
+
+
+File: ./.git/hooks/applypatch-msg.sample
+
+#!/bin/sh
+#
+# An example hook script to check the commit log message taken by
+# applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.  The hook is
+# allowed to edit the commit message file.
+#
+# To enable this hook, rename this file to "applypatch-msg".
+
+. git-sh-setup
+commitmsg="$(git rev-parse --git-path hooks/commit-msg)"
+test -x "$commitmsg" && exec "$commitmsg" ${1+"$@"}
+:
+
+
+File: ./.git/hooks/fsmonitor-watchman.sample
+
+#!/usr/bin/perl
+
+use strict;
+use warnings;
+use IPC::Open2;
+
+# An example hook script to integrate Watchman
+# (https://facebook.github.io/watchman/) with git to speed up detecting
+# new and modified files.
+#
+# The hook is passed a version (currently 2) and last update token
+# formatted as a string and outputs to stdout a new update token and
+# all files that have been modified since the update token. Paths must
+# be relative to the root of the working tree and separated by a single NUL.
+#
+# To enable this hook, rename this file to "query-watchman" and set
+# 'git config core.fsmonitor .git/hooks/query-watchman'
+#
+my ($version, $last_update_token) = @ARGV;
+
+# Uncomment for debugging
+# print STDERR "$0 $version $last_update_token\n";
+
+# Check the hook interface version
+if ($version ne 2) {
+	die "Unsupported query-fsmonitor hook version '$version'.\n" .
+	    "Falling back to scanning...\n";
+}
+
+my $git_work_tree = get_working_dir();
+
+my $retry = 1;
+
+my $json_pkg;
+eval {
+	require JSON::XS;
+	$json_pkg = "JSON::XS";
+	1;
+} or do {
+	require JSON::PP;
+	$json_pkg = "JSON::PP";
+};
+
+launch_watchman();
+
+sub launch_watchman {
+	my $o = watchman_query();
+	if (is_work_tree_watched($o)) {
+		output_result($o->{clock}, @{$o->{files}});
+	}
+}
+
+sub output_result {
+	my ($clockid, @files) = @_;
+
+	# Uncomment for debugging watchman output
+	# open (my $fh, ">", ".git/watchman-output.out");
+	# binmode $fh, ":utf8";
+	# print $fh "$clockid\n@files\n";
+	# close $fh;
+
+	binmode STDOUT, ":utf8";
+	print $clockid;
+	print "\0";
+	local $, = "\0";
+	print @files;
+}
+
+sub watchman_clock {
+	my $response = qx/watchman clock "$git_work_tree"/;
+	die "Failed to get clock id on '$git_work_tree'.\n" .
+		"Falling back to scanning...\n" if $? != 0;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub watchman_query {
+	my $pid = open2(\*CHLD_OUT, \*CHLD_IN, 'watchman -j --no-pretty')
+	or die "open2() failed: $!\n" .
+	"Falling back to scanning...\n";
+
+	# In the query expression below we're asking for names of files that
+	# changed since $last_update_token but not from the .git folder.
+	#
+	# To accomplish this, we're using the "since" generator to use the
+	# recency index to select candidate nodes and "fields" to limit the
+	# output to file names only. Then we're using the "expression" term to
+	# further constrain the results.
+	my $last_update_line = "";
+	if (substr($last_update_token, 0, 1) eq "c") {
+		$last_update_token = "\"$last_update_token\"";
+		$last_update_line = qq[\n"since": $last_update_token,];
+	}
+	my $query = <<"	END";
+		["query", "$git_work_tree", {$last_update_line
+			"fields": ["name"],
+			"expression": ["not", ["dirname", ".git"]]
+		}]
+	END
+
+	# Uncomment for debugging the watchman query
+	# open (my $fh, ">", ".git/watchman-query.json");
+	# print $fh $query;
+	# close $fh;
+
+	print CHLD_IN $query;
+	close CHLD_IN;
+	my $response = do {local $/; <CHLD_OUT>};
+
+	# Uncomment for debugging the watch response
+	# open ($fh, ">", ".git/watchman-response.json");
+	# print $fh $response;
+	# close $fh;
+
+	die "Watchman: command returned no output.\n" .
+	"Falling back to scanning...\n" if $response eq "";
+	die "Watchman: command returned invalid output: $response\n" .
+	"Falling back to scanning...\n" unless $response =~ /^\{/;
+
+	return $json_pkg->new->utf8->decode($response);
+}
+
+sub is_work_tree_watched {
+	my ($output) = @_;
+	my $error = $output->{error};
+	if ($retry > 0 and $error and $error =~ m/unable to resolve root .* directory (.*) is not watched/) {
+		$retry--;
+		my $response = qx/watchman watch "$git_work_tree"/;
+		die "Failed to make watchman watch '$git_work_tree'.\n" .
+		    "Falling back to scanning...\n" if $? != 0;
+		$output = $json_pkg->new->utf8->decode($response);
+		$error = $output->{error};
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		# Uncomment for debugging watchman output
+		# open (my $fh, ">", ".git/watchman-output.out");
+		# close $fh;
+
+		# Watchman will always return all files on the first query so
+		# return the fast "everything is dirty" flag to git and do the
+		# Watchman query just to get it over with now so we won't pay
+		# the cost in git to look up each individual file.
+		my $o = watchman_clock();
+		$error = $output->{error};
+
+		die "Watchman: $error.\n" .
+		"Falling back to scanning...\n" if $error;
+
+		output_result($o->{clock}, ("/"));
+		$last_update_token = $o->{clock};
+
+		eval { launch_watchman() };
+		return 0;
+	}
+
+	die "Watchman: $error.\n" .
+	"Falling back to scanning...\n" if $error;
+
+	return 1;
+}
+
+sub get_working_dir {
+	my $working_dir;
+	if ($^O =~ 'msys' || $^O =~ 'cygwin') {
+		$working_dir = Win32::GetCwd();
+		$working_dir =~ tr/\\/\//;
+	} else {
+		require Cwd;
+		$working_dir = Cwd::cwd();
+	}
+
+	return $working_dir;
+}
+
+
+File: ./.git/hooks/pre-receive.sample
+
+#!/bin/sh
+#
+# An example hook script to make use of push options.
+# The example simply echoes all push options that start with 'echoback='
+# and rejects all pushes when the "reject" push option is used.
+#
+# To enable this hook, rename this file to "pre-receive".
+
+if test -n "$GIT_PUSH_OPTION_COUNT"
+then
+	i=0
+	while test "$i" -lt "$GIT_PUSH_OPTION_COUNT"
+	do
+		eval "value=\$GIT_PUSH_OPTION_$i"
+		case "$value" in
+		echoback=*)
+			echo "echo from the pre-receive-hook: ${value#*=}" >&2
+			;;
+		reject)
+			exit 1
+		esac
+		i=$((i + 1))
+	done
+fi
+
+
+File: ./.git/hooks/prepare-commit-msg.sample
+
+#!/bin/sh
+#
+# An example hook script to prepare the commit log message.
+# Called by "git commit" with the name of the file that has the
+# commit message, followed by the description of the commit
+# message's source.  The hook's purpose is to edit the commit
+# message file.  If the hook fails with a non-zero status,
+# the commit is aborted.
+#
+# To enable this hook, rename this file to "prepare-commit-msg".
+
+# This hook includes three examples. The first one removes the
+# "# Please enter the commit message..." help message.
+#
+# The second includes the output of "git diff --name-status -r"
+# into the message, just before the "git status" output.  It is
+# commented because it doesn't cope with --amend or with squashed
+# commits.
+#
+# The third example adds a Signed-off-by line to the message, that can
+# still be edited.  This is rarely a good idea.
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+SHA1=$3
+
+/usr/bin/perl -i.bak -ne 'print unless(m/^. Please enter the commit message/..m/^#$/)' "$COMMIT_MSG_FILE"
+
+# case "$COMMIT_SOURCE,$SHA1" in
+#  ,|template,)
+#    /usr/bin/perl -i.bak -pe '
+#       print "\n" . `git diff --cached --name-status -r`
+# 	 if /^#/ && $first++ == 0' "$COMMIT_MSG_FILE" ;;
+#  *) ;;
+# esac
+
+# SOB=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*>\).*$/Signed-off-by: \1/p')
+# git interpret-trailers --in-place --trailer "$SOB" "$COMMIT_MSG_FILE"
+# if test -z "$COMMIT_SOURCE"
+# then
+#   /usr/bin/perl -i.bak -pe 'print "\n" if !$first_line++' "$COMMIT_MSG_FILE"
+# fi
+
+
+File: ./.git/hooks/post-update.sample
+
+#!/bin/sh
+#
+# An example hook script to prepare a packed repository for use over
+# dumb transports.
+#
+# To enable this hook, rename this file to "post-update".
+
+exec git update-server-info
+
+
+File: ./.git/hooks/pre-merge-commit.sample
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed.
+# Called by "git merge" with no arguments.  The hook should
+# exit with non-zero status after issuing an appropriate message to
+# stderr if it wants to stop the merge commit.
+#
+# To enable this hook, rename this file to "pre-merge-commit".
+
+. git-sh-setup
+test -x "$GIT_DIR/hooks/pre-commit" &&
+        exec "$GIT_DIR/hooks/pre-commit"
+:
+
+
+File: ./.git/hooks/pre-applypatch.sample
+
+#!/bin/sh
+#
+# An example hook script to verify what is about to be committed
+# by applypatch from an e-mail message.
+#
+# The hook should exit with non-zero status after issuing an
+# appropriate message if it wants to stop the commit.
+#
+# To enable this hook, rename this file to "pre-applypatch".
+
+. git-sh-setup
+precommit="$(git rev-parse --git-path hooks/pre-commit)"
+test -x "$precommit" && exec "$precommit" ${1+"$@"}
+:
+
+
+File: ./.git/hooks/pre-push.sample
+
+#!/bin/sh
+
+# An example hook script to verify what is about to be pushed.  Called by "git
+# push" after it has checked the remote status, but before anything has been
+# pushed.  If this script exits with a non-zero status nothing will be pushed.
+#
+# This hook is called with the following parameters:
+#
+# $1 -- Name of the remote to which the push is being done
+# $2 -- URL to which the push is being done
+#
+# If pushing without using a named remote those arguments will be equal.
+#
+# Information about the commits which are being pushed is supplied as lines to
+# the standard input in the form:
+#
+#   <local ref> <local oid> <remote ref> <remote oid>
+#
+# This sample shows how to prevent push of commits where the log message starts
+# with "WIP" (work in progress).
+
+remote="$1"
+url="$2"
+
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+
+while read local_ref local_oid remote_ref remote_oid
+do
+	if test "$local_oid" = "$zero"
+	then
+		# Handle delete
+		:
+	else
+		if test "$remote_oid" = "$zero"
+		then
+			# New branch, examine all commits
+			range="$local_oid"
+		else
+			# Update to existing branch, examine new commits
+			range="$remote_oid..$local_oid"
+		fi
+
+		# Check for WIP commit
+		commit=$(git rev-list -n 1 --grep '^WIP' "$range")
+		if test -n "$commit"
+		then
+			echo >&2 "Found WIP commit in $local_ref, not pushing"
+			exit 1
+		fi
+	fi
+done
+
+exit 0
+
+
+File: ./.git/hooks/update.sample
+
+#!/bin/sh
+#
+# An example hook script to block unannotated tags from entering.
+# Called by "git receive-pack" with arguments: refname sha1-old sha1-new
+#
+# To enable this hook, rename this file to "update".
+#
+# Config
+# ------
+# hooks.allowunannotated
+#   This boolean sets whether unannotated tags will be allowed into the
+#   repository.  By default they won't be.
+# hooks.allowdeletetag
+#   This boolean sets whether deleting tags will be allowed in the
+#   repository.  By default they won't be.
+# hooks.allowmodifytag
+#   This boolean sets whether a tag may be modified after creation. By default
+#   it won't be.
+# hooks.allowdeletebranch
+#   This boolean sets whether deleting branches will be allowed in the
+#   repository.  By default they won't be.
+# hooks.denycreatebranch
+#   This boolean sets whether remotely creating branches will be denied
+#   in the repository.  By default this is allowed.
+#
+
+# --- Command line
+refname="$1"
+oldrev="$2"
+newrev="$3"
+
+# --- Safety check
+if [ -z "$GIT_DIR" ]; then
+	echo "Don't run this script from the command line." >&2
+	echo " (if you want, you could supply GIT_DIR then run" >&2
+	echo "  $0 <ref> <oldrev> <newrev>)" >&2
+	exit 1
+fi
+
+if [ -z "$refname" -o -z "$oldrev" -o -z "$newrev" ]; then
+	echo "usage: $0 <ref> <oldrev> <newrev>" >&2
+	exit 1
+fi
+
+# --- Config
+allowunannotated=$(git config --type=bool hooks.allowunannotated)
+allowdeletebranch=$(git config --type=bool hooks.allowdeletebranch)
+denycreatebranch=$(git config --type=bool hooks.denycreatebranch)
+allowdeletetag=$(git config --type=bool hooks.allowdeletetag)
+allowmodifytag=$(git config --type=bool hooks.allowmodifytag)
+
+# check for no description
+projectdesc=$(sed -e '1q' "$GIT_DIR/description")
+case "$projectdesc" in
+"Unnamed repository"* | "")
+	echo "*** Project description file hasn't been set" >&2
+	exit 1
+	;;
+esac
+
+# --- Check types
+# if $newrev is 0000...0000, it's a commit to delete a ref.
+zero=$(git hash-object --stdin </dev/null | tr '[0-9a-f]' '0')
+if [ "$newrev" = "$zero" ]; then
+	newrev_type=delete
+else
+	newrev_type=$(git cat-file -t $newrev)
+fi
+
+case "$refname","$newrev_type" in
+	refs/tags/*,commit)
+		# un-annotated tag
+		short_refname=${refname##refs/tags/}
+		if [ "$allowunannotated" != "true" ]; then
+			echo "*** The un-annotated tag, $short_refname, is not allowed in this repository" >&2
+			echo "*** Use 'git tag [ -a | -s ]' for tags you want to propagate." >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,delete)
+		# delete tag
+		if [ "$allowdeletetag" != "true" ]; then
+			echo "*** Deleting a tag is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/tags/*,tag)
+		# annotated tag
+		if [ "$allowmodifytag" != "true" ] && git rev-parse $refname > /dev/null 2>&1
+		then
+			echo "*** Tag '$refname' already exists." >&2
+			echo "*** Modifying a tag is not allowed in this repository." >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,commit)
+		# branch
+		if [ "$oldrev" = "$zero" -a "$denycreatebranch" = "true" ]; then
+			echo "*** Creating a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/heads/*,delete)
+		# delete branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	refs/remotes/*,commit)
+		# tracking branch
+		;;
+	refs/remotes/*,delete)
+		# delete tracking branch
+		if [ "$allowdeletebranch" != "true" ]; then
+			echo "*** Deleting a tracking branch is not allowed in this repository" >&2
+			exit 1
+		fi
+		;;
+	*)
+		# Anything else (is there anything else?)
+		echo "*** Update hook: unknown type of update to ref $refname of type $newrev_type" >&2
+		exit 1
+		;;
+esac
+
+# --- Finished
+exit 0
+
+
+File: ./.git/hooks/push-to-checkout.sample
+
+#!/bin/sh
+
+# An example hook script to update a checked-out tree on a git push.
+#
+# This hook is invoked by git-receive-pack(1) when it reacts to git
+# push and updates reference(s) in its repository, and when the push
+# tries to update the branch that is currently checked out and the
+# receive.denyCurrentBranch configuration variable is set to
+# updateInstead.
+#
+# By default, such a push is refused if the working tree and the index
+# of the remote repository has any difference from the currently
+# checked out commit; when both the working tree and the index match
+# the current commit, they are updated to match the newly pushed tip
+# of the branch. This hook is to be used to override the default
+# behaviour; however the code below reimplements the default behaviour
+# as a starting point for convenient modification.
+#
+# The hook receives the commit with which the tip of the current
+# branch is going to be updated:
+commit=$1
+
+# It can exit with a non-zero status to refuse the push (when it does
+# so, it must not modify the index or the working tree).
+die () {
+	echo >&2 "$*"
+	exit 1
+}
+
+# Or it can make any necessary changes to the working tree and to the
+# index to bring them to the desired state when the tip of the current
+# branch is updated to the new commit, and exit with a zero status.
+#
+# For example, the hook can simply run git read-tree -u -m HEAD "$1"
+# in order to emulate git fetch that is run in the reverse direction
+# with git push, as the two-tree form of git read-tree -u -m is
+# essentially the same as git switch or git checkout that switches
+# branches while keeping the local changes in the working tree that do
+# not interfere with the difference between the branches.
+
+# The below is a more-or-less exact translation to shell of the C code
+# for the default behaviour for git's push-to-checkout hook defined in
+# the push_to_deploy() function in builtin/receive-pack.c.
+#
+# Note that the hook will be executed from the repository directory,
+# not from the working tree, so if you want to perform operations on
+# the working tree, you will have to adapt your code accordingly, e.g.
+# by adding "cd .." or using relative paths.
+
+if ! git update-index -q --ignore-submodules --refresh
+then
+	die "Up-to-date check failed"
+fi
+
+if ! git diff-files --quiet --ignore-submodules --
+then
+	die "Working directory has unstaged changes"
+fi
+
+# This is a rough translation of:
+#
+#   head_has_history() ? "HEAD" : EMPTY_TREE_SHA1_HEX
+if git cat-file -e HEAD 2>/dev/null
+then
+	head=HEAD
+else
+	head=$(git hash-object -t tree --stdin </dev/null)
+fi
+
+if ! git diff-index --quiet --cached --ignore-submodules $head --
+then
+	die "Working directory has staged changes"
+fi
+
+if ! git read-tree -u -m "$commit"
+then
+	die "Could not update working tree to new HEAD"
+fi
+
+
+File: ./.git/refs/heads/main
+
+75531d33ea633a03c4a25d7f82d3402474ae8626
+
+
+File: ./.git/refs/remotes/origin/HEAD
+
+ref: refs/remotes/origin/main
+
+
+File: ./.git/refs/remotes/origin/main
+
+75531d33ea633a03c4a25d7f82d3402474ae8626
+
+
