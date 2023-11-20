@@ -2,9 +2,9 @@
 import subprocess
 import os
 
-def call_llava_cli(image_path, prompt):
+def call_llava_cli(image_path, prompt, llava_cli_path="/workspace/LLaVA/llava/serve/cli.py"):
         command = [
-            "python", "-m", "llava.serve.cli",
+            "python", "-m", llava_cli_path,
             "--model-path", "liuhaotian/llava-v1.5-7b",
             "--image-file", image_path,
             "--load-4bit"
