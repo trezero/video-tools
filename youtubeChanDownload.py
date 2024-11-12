@@ -1,16 +1,19 @@
 import os
 import yt_dlp
 import sys
+import argparse
 
 # Set these variables
-CHANNEL_URL = 'https://www.youtube.com/@PokerGO'
 SAVE_PATH = 'downloads/'
 MAX_DURATION = 5 * 60  # 5 minutes in seconds
+
+def get_channel_name(ydl, channel_url):
+    info = ydl.extract_info(channel_url, download=False)
+    return info.get('channel', 'Unknown_Channel').replace(' ', '_')
 
 def download_channel_videos(channel_url, save_path, max_duration):
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
-        'outtmpl': os.path.join(save_path, '%(title)s.%(ext)s'),
         'ignoreerrors': True,
         'extract_flat': 'in_playlist',
         'force_generic_extractor': False,
@@ -19,6 +22,13 @@ def download_channel_videos(channel_url, save_path, max_duration):
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         try:
+            channel_name = get_channel_name(ydl, channel_url)
+            channel_folder = os.path.join(save_path, channel_name)
+            os.makedirs(channel_folder, exist_ok=True)
+            
+            ydl_opts['outtmpl'] = os.path.join(channel_folder, '%(title)s.%(ext)s')
+            ydl = yt_dlp.YoutubeDL(ydl_opts)
+
             print(f"Attempting to extract info from: {channel_url}/videos")
             result = ydl.extract_info(f"{channel_url}/videos", download=False)
             
@@ -37,6 +47,7 @@ def download_channel_videos(channel_url, save_path, max_duration):
                     filtered_videos.append(entry)
             
             print(f"Found {len(filtered_videos)} videos under {max_duration} seconds")
+            print(f"Saving videos to: {channel_folder}")
             
             for video in filtered_videos:
                 try:
@@ -53,14 +64,21 @@ def download_channel_videos(channel_url, save_path, max_duration):
             print("Traceback:", sys.exc_info())
 
 def main():
-    if not os.path.exists(SAVE_PATH):
-        os.makedirs(SAVE_PATH)
+    parser = argparse.ArgumentParser(description="Download videos from a YouTube channel.")
+    parser.add_argument("channel_url", help="URL of the YouTube channel")
+    parser.add_argument("--save_path", default=SAVE_PATH, help="Path to save downloaded videos")
+    parser.add_argument("--max_duration", type=int, default=MAX_DURATION, help="Maximum duration of videos to download (in seconds)")
     
-    print(f"Downloading videos from: {CHANNEL_URL}")
-    print(f"Saving to: {SAVE_PATH}")
-    print(f"Filtering videos up to {MAX_DURATION} seconds")
+    args = parser.parse_args()
+
+    if not os.path.exists(args.save_path):
+        os.makedirs(args.save_path)
     
-    download_channel_videos(CHANNEL_URL, SAVE_PATH, MAX_DURATION)
+    print(f"Downloading videos from: {args.channel_url}")
+    print(f"Base save path: {args.save_path}")
+    print(f"Filtering videos up to {args.max_duration} seconds")
+    
+    download_channel_videos(args.channel_url, args.save_path, args.max_duration)
     
     print("Download process completed.")
 
