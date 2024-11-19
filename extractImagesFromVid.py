@@ -3,7 +3,7 @@ import os
 import sys
 
 # Configuration: Number of images to extract per minute
-IMAGES_PER_MINUTE = 10
+IMAGES_PER_MINUTE = 20
 
 def extract_images(video_path, images_per_minute):
     # Create the output directory
