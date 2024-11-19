@@ -1,0 +1,45 @@
+<x:xmpmeta xmlns:x="adobe:ns:meta/" x:xmptk="Adobe XMP Core 9.0-c001 152.deb9585, 2024/02/06-08:36:10        ">
+ <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+  <rdf:Description rdf:about=""
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:xmpMM="http://ns.adobe.com/xap/1.0/mm/"
+    xmlns:stEvt="http://ns.adobe.com/xap/1.0/sType/ResourceEvent#"
+    xmlns:xmp="http://ns.adobe.com/xap/1.0/"
+    xmlns:xmpDM="http://ns.adobe.com/xmp/1.0/DynamicMedia/"
+    xmlns:stDim="http://ns.adobe.com/xap/1.0/sType/Dimensions#"
+   dc:identifier="060A2B340101010501010D1113000000C0E0F3015483058062FA54E43AF12307"
+   xmpMM:InstanceID="xmp.iid:9468b916-e31f-433e-b719-58f5965bb0e3"
+   xmpMM:DocumentID="xmp.did:9380e720-93c5-4951-a1ec-20ac01e2f71e"
+   xmpMM:OriginalDocumentID="xmp.did:9380e720-93c5-4951-a1ec-20ac01e2f71e"
+   xmp:MetadataDate="2024-10-04T09:48:35-07:00"
+   xmp:ModifyDate="2024-10-04T09:48:34-07:00"
+   xmpDM:videoPixelAspectRatio="1/1"
+   xmpDM:videoFieldOrder="Upper"
+   xmpDM:videoAlphaMode="none"
+   xmpDM:audioSampleRate="48000"
+   xmpDM:audioSampleType="24Int"
+   xmpDM:audioChannelType="Stereo"
+   xmpDM:videoFrameRate="25.000000">
+   <xmpMM:History>
+    <rdf:Seq>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:69d35567-4595-4d88-988d-fbb538169e57"
+      stEvt:when="2024-10-04T09:48:34-07:00"
+      stEvt:softwareAgent="Adobe Premiere Pro 2024.0 (Macintosh)"
+      stEvt:changed="/"/>
+     <rdf:li
+      stEvt:action="saved"
+      stEvt:instanceID="xmp.iid:9468b916-e31f-433e-b719-58f5965bb0e3"
+      stEvt:when="2024-10-04T09:48:35-07:00"
+      stEvt:softwareAgent="Adobe Premiere Pro 2024.0 (Macintosh)"
+      stEvt:changed="/metadata"/>
+    </rdf:Seq>
+   </xmpMM:History>
+   <xmpDM:videoFrameSize
+    stDim:w="1920"
+    stDim:h="1080"
+    stDim:unit="pixel"/>
+  </rdf:Description>
+ </rdf:RDF>
+</x:xmpmeta>
