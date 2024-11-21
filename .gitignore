@@ -8,7 +8,8 @@ __pycache__/
 
 # C extensions
 *.so
-samples/
+samples/*
+sampleFiles/*
 
 # Distribution / packaging
 .Python
