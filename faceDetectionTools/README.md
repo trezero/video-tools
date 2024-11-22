@@ -63,19 +63,131 @@ print("Detailed Metrics:", metrics)
 ```
 
 ### Training Face Generation
-```python
-from faceDetectionTools import extract_faces
 
-# Extract faces from a video
-extract_faces(
-    video_path="path/to/video.mp4",
-    output_folder="output_faces",
-    max_faces=30,              # Maximum number of unique faces to extract
-    images_per_face=30,        # Number of images per unique face
-    batch_size=4,              # GPU batch size
-    frames_per_second=1.0      # Sampling rate
-)
+The face extraction tool now supports configuration-based usage for better flexibility and reproducibility.
+
+#### Basic Usage
+
+1. Using default configuration:
+```bash
+python generateTrainingFaces.py video.mp4
 ```
+
+2. Using custom configuration:
+```bash
+python generateTrainingFaces.py video.mp4 --config custom_config.json
+```
+
+#### Configuration File
+
+The tool uses a JSON configuration file (`faceGenConfig.json`) to control all aspects of face extraction. Here's the default configuration structure:
+
+```json
+{
+    "output_dir": "extracted_faces",
+    "max_faces": 30,
+    "images_per_face": 30,
+    "min_face_size": 40,
+    "min_confidence": 0.95,
+    "min_quality": 0.6,
+    "batch_size": 4,
+    "fps": 1.0,
+    "use_gpu": true,
+    "gpu_memory_fraction": 0.7,
+    "face_similarity_threshold": 0.6,
+    "skip_existing": true,
+    "save_metadata": true,
+    "quality_metrics": {
+        "blur_threshold": 100,
+        "brightness_range": [0.2, 0.8],
+        "min_face_angle": 30,
+        "min_eye_openness": 0.3
+    },
+    "logging": {
+        "level": "INFO",
+        "show_progress": true
+    }
+}
+```
+
+#### Configuration Parameters
+
+1. **Basic Settings**
+   - `output_dir`: Directory where extracted faces will be saved
+   - `max_faces`: Maximum number of unique faces to extract
+   - `images_per_face`: Number of images to save per unique face
+   - `fps`: Frames per second to process from video
+
+2. **Face Detection Settings**
+   - `min_face_size`: Minimum face size in pixels
+   - `min_confidence`: Minimum confidence score for face detection
+   - `min_quality`: Minimum quality score for face selection
+   - `face_similarity_threshold`: Threshold for determining unique faces
+
+3. **Performance Settings**
+   - `use_gpu`: Enable/disable GPU acceleration
+   - `gpu_memory_fraction`: Fraction of GPU memory to use
+   - `batch_size`: Batch size for processing
+
+4. **Quality Metrics**
+   - `blur_threshold`: Threshold for blur detection
+   - `brightness_range`: Acceptable brightness range [min, max]
+   - `min_face_angle`: Minimum acceptable face angle
+   - `min_eye_openness`: Minimum eye aspect ratio
+
+5. **Output Settings**
+   - `skip_existing`: Skip processing if output directory exists
+   - `save_metadata`: Save detailed metadata for each face
+
+#### Output Structure
+
+The tool creates the following directory structure:
+```
+output_dir/
+├── face_1/
+│   ├── frame_0001_quality_0.85.jpg
+│   ├── frame_0015_quality_0.92.jpg
+│   └── metadata.json
+├── face_2/
+│   ├── frame_0008_quality_0.88.jpg
+│   ├── frame_0023_quality_0.90.jpg
+│   └── metadata.json
+└── extraction_stats.json
+```
+
+Each face directory contains:
+- High-quality face images named with frame number and quality score
+- `metadata.json` with detailed face metrics and extraction information
+- Global `extraction_stats.json` with overall processing statistics
+
+#### Custom Configuration Example
+
+Create a custom configuration for high-quality face extraction:
+
+```json
+{
+    "output_dir": "high_quality_faces",
+    "max_faces": 50,
+    "images_per_face": 50,
+    "min_face_size": 60,
+    "min_confidence": 0.98,
+    "min_quality": 0.8,
+    "batch_size": 8,
+    "fps": 2.0,
+    "quality_metrics": {
+        "blur_threshold": 150,
+        "brightness_range": [0.3, 0.7],
+        "min_face_angle": 20,
+        "min_eye_openness": 0.4
+    }
+}
+```
+
+This configuration will:
+- Extract more faces with higher quality requirements
+- Process frames at 2 FPS for more temporal coverage
+- Use stricter quality metrics for better results
+- Output to a custom directory
 
 ## Quality Metrics
 
