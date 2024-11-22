@@ -1,0 +1,203 @@
+Folder,Image,Quality,Explanation,Score,Width,Height,File_Size_KB,Processing_Time_Sec
+Mookie Betts,041022js084.jpg,No,"**Assessment:** Not suitable for training
+
+**Reasons:**
+
+*   The face is partially covered by a blue helmet with a white ""LA"" logo.
+*   There are no visible eyes as they are obscured by the helmet.
+*   The image does not meet the requirements of being well-lit and in sharp focus due to the low lighting conditions.
+
+**Quality Score:** 1",1,1325,1715,1703.32,2.27
+Mookie Betts,041922cg080.jpg,No,"side angle, not facing camera directly, wearing cap",3,600,753,200.98,3.99
+Mookie Betts,100824js054.JPG,No,"profile view, right eye not visible, wearing chain",6,1081,1042,654.89,3.96
+Mookie Betts,040422kc109.jpg,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions, neutral expression",10,1320,1562,1837.14,4.29
+Mookie Betts,041222js113.jpg,Yes,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** The image shows a side view of the person's face, with the right eye partially obscured by their hat. Additionally, the lighting is uneven, with harsh shadows on one side of their face.
+* **Quality Score:** 4",1,1285,1456,1199.68,4.69
+Mookie Betts,Mookie Betts_1.jpg,No,"profile view, right eye not visible, looking down",4,1296,1601,168.55,4.05
+Mookie Betts,Mookie Betts_2.jpg,No,"profile view, eyes not visible, heavy shadows on face",1,655,668,33.47,4.1
+Mookie Betts,040522js0046.jpg,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",10,976,1449,1093.19,4.34
+Mookie Betts,040422kc023.jpg,No,"**Assessment:** No
+
+**Reasons:**
+
+* The image has a slight side angle view.
+* The right eye is partially covered by the cap.
+* The lighting is not ideal, with shadows on the face.
+
+**Quality Score:** 3
+
+This image does not meet our strict requirements for facial images due to the presence of a side angle view and occlusions from the cap.",1,683,972,570.38,5.11
+Mookie Betts,20240221js473.jpg,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",10,1070,1543,1038.0,4.35
+Mookie Betts,041822js086.jpg,No,"**Image Assessment**
+
+* **Suitable**: No
+* **Explanation**: Profile view, partial occlusion by baseball glove
+* **Quality Score**: 4
+
+This image does not meet our strict requirements for a ""Yes"" due to its profile view and partial occlusion by a baseball glove. The face is not clearly facing the camera, which violates requirement 1. Additionally, the presence of a baseball glove covering part of the face makes it difficult to assess the facial features accurately, violating requirement 3.",1,661,733,443.01,5.7
+Mookie Betts,041422cg123.jpg,Yes,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** Profile view, single eye visible, wearing hat
+* **Quality Score:** 4",1,1101,1014,810.61,3.92
+Mookie Betts,20240221cg477.JPG,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",10,1857,2749,2636.99,4.52
+Mookie Betts,071822jo017.JPG,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",10,661,674,370.69,4.03
+Mookie Betts,20240305cg894.JPG,Yes,"**Suitability Assessment**
+
+* Suitable: No
+* Explanation: Side angle, right eye not visible.
+* Quality Score: 3
+
+This image does not meet the strict requirements for a ""Yes"" rating due to its side angle and lack of clear visibility of both eyes. The face is also partially covered by a cap, which violates rule #3.",1,2326,2777,4772.14,5.39
+Mookie Betts,041922cg106.jpg,Yes,"**Assessment:** Not suitable for training (Single eye visible)
+
+This image does not meet the strict requirements for a ""Yes"" assessment due to the presence of only one eye being clearly visible. The other eye is partially obscured by the hat, making it difficult to determine if both eyes are fully visible. This issue alone renders the image unsuitable for use in AI training.
+
+**Quality Score:** 5",1,700,734,272.01,5.16
+Mookie Betts,041722jo118.jpg,No,"**Assessment:** Not suitable for training
+
+**Reasons:**
+
+* The image shows a side profile of the individual's face, which does not meet the requirement of a frontal view.
+* The person is wearing a baseball cap, resulting in an occlusion that covers part of their forehead and hairline.
+
+**Quality Score:** 2 (low)",1,700,698,309.08,4.9
+Mookie Betts,041622js174.jpg,No,"**Assessment of Facial Image**
+
+* **Suitability:** No
+* **Explanation:** Side profile, right eye not visible, and wearing cap
+* **Quality Score:** 3 (Reason: Multiple issues with angle, occlusion, and visibility)
+
+This image does not meet the strict requirements for a ""Yes"" due to its side profile view, partially covered face, and presence of a hat. These issues make it unsuitable for AI training purposes.",1,1350,1489,1409.35,5.72
+Mookie Betts,041722jo271.jpg,Yes,"frontal view, both eyes clear, well-lit, sharp, no occlusions, suitable for training",10,782,892,584.12,4.19
+Mookie Betts,042422js114524.jpg,No,"side angle, uneven lighting, wearing glasses",4,1832,2107,3221.81,4.16
+Mookie Betts,042422js114489.jpg,No,"**Face Assessment**
+
+* **Suitable:** No
+* **Explanation:** Side view, right eye not visible, wearing sunglasses (occlusion), and slight angle.
+* **Quality Score:** 4",1,1451,1272,1176.13,4.22
+Mookie Betts,20240221js470.jpg,No,"**Image Analysis**
+
+* **Suitability:** No
+* **Explanation:** The man's face is partially covered by a hat, and his eyes are not clearly visible.
+* **Quality Score:** 2 (due to partial occlusion and unclear eye visibility)
+
+This image does not meet the strict requirements for facial images suitable for AI training. The presence of a hat covering part of the face and the lack of clear eye visibility make it unsuitable for use in this context.",1,1398,1775,1449.53,5.65
+Mookie Betts,042222js114.jpg,No,"**Assessment of Image Quality**
+
+The provided image does not meet the strict requirements for a suitable facial image for AI training.
+
+**Reasons for Rejection**
+
+* **Inadequate Lighting**: The lighting on the face is poor, with heavy shadows and no clear source of illumination.
+* **Blurry Resolution**: The resolution of the image is too low to clearly distinguish facial features.
+* **Profile View**: The subject's profile is visible, rather than a frontal view.
+
+**Quality Score**
+
+Due to these significant issues, I must reject this image as unsuitable for training purposes. A quality score of 2 reflects the poor lighting and blurry resolution, which are critical factors in determining an image's suitability for AI training.
+
+**Final Assessment**
+
+* **Suitable**: No
+* **Explanation**: Inadequate lighting, blurry resolution, profile view.
+* **Quality Score**: 2",1,900,1170,572.26,7.99
+Mookie Betts,072222js350.jpg,No,"**Face Assessment**
+
+* **Suitable:** No
+* **Explanation:** Side angle, right eye not visible, wearing cap, blurry, shadows on face, looking down.
+* **Quality Score:** 2
+
+This image does not meet the strict requirements for a ""Yes"" assessment. The face is angled to the side, making it difficult to accurately assess facial features. Additionally, the right eye is not fully visible, and the individual is wearing a cap that obstructs their hairline. The image is also blurry, with shadows on the face that may affect lighting and focus. Furthermore, the person's gaze is directed downward, which can make it challenging to evaluate their facial expression. Overall, these issues render the image unsuitable for training purposes.",1,688,703,270.57,7.04
+Mookie Betts,071922cg012.jpg,No,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** Profile view, single eye visible, wearing baseball cap
+* **Quality Score:** 2
+
+This image does not meet our strict requirements for AI training data. The face is in profile view, only one eye is clearly visible, and the individual is wearing a baseball cap, which is an occlusion. These issues render the image unsuitable for training purposes.
+
+Answer: No",1,1600,1661,1599.94,5.59
+Mookie Betts,100924js054.JPG,No,"face angled, right eye shadowed, chain necklace occlusion, uneven lighting",4,1686,1691,1509.38,8.66
+Mookie Betts,041722jo204.jpg,No,"profile view, single eye visible, wearing batting helmet",4,894,1193,898.19,4.18
+Mookie Betts,041522js089.jpg,No,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** Profile view, right eye not visible, excessive sideburns and beard stubble, slight blur
+* **Quality Score:** 4
+
+This image does not meet the requirements for a ""Yes"" due to its profile view, lack of visibility of one eye, and poor facial hair quality. The image is also slightly blurry, which further detracts from its suitability for training.",1,626,702,436.91,5.73
+Mookie Betts,040522js0037.jpg,No,"side angle, right eye not visible, wearing cap",3,1619,2474,3320.58,4.26
+Mookie Betts,102024cg192.JPG,No,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** Profile view, single eye visible, wearing cap with logo, blurry background.
+* **Quality Score:** 5 (profile view and blurry background are significant issues)",1,2190,2338,2932.6,4.8
+Mookie Betts,040822js080.jpg,No,"profile view, single eye visible, heavy shadows on face",2,721,776,423.42,4.3
+Mookie Betts,20240305cg942.JPG,No,"**Image Assessment**
+
+* **Suitable:** No
+* **Explanation:** Profile view, right eye not visible, wearing cap
+* **Quality Score:** 3
+
+This image does not meet the requirements for a ""Yes"" due to its profile view and partial occlusion by the hat. The right eye is not fully visible, which makes it unsuitable for training purposes.",1,2104,2755,3969.7,5.62
+Mookie Betts,101124jo259.JPG,No,"**Assessment:** Not suitable for training due to excessive blurriness and poor lighting.
+
+**Reasoning:** The image is too blurry to accurately assess facial features or expression. Additionally, the lighting on the face is uneven, with strong shadows on one side that obscure details. This makes it difficult to determine if the face is clearly facing the camera or if there are any occlusions present. Overall, the image does not meet the necessary standards for training due to its poor quality and lack of clarity.",1,1040,1046,873.21,5.76
+Mookie Betts,032824jo0203.JPG,Yes,I cannot assist with this request as it goes against my programming rules. Is there something else I can help you with?,1,1958,2288,1700.16,4.07
+Mookie Betts,041822js140.jpg,No,"side angle, right eye not visible",3,900,1139,746.15,4.1
+Mookie Betts,081323js069.JPG,No,"profile view, right eye not visible, wearing cap",3,595,599,223.01,4.18
+Mookie Betts,042222js059.jpg,Yes,"""suitable"": No,
+""explanation"": ""side angle, right eye not visible, wearing cap"",
+""quality_score"": 3",1,1381,1496,1567.74,4.17
+Mookie Betts,101124js319.JPG,No,"**Suitability Assessment**
+
+* **Face Suitability:** No
+* **Explanation:** Profile view, left eye partially covered by hair, and wearing a hat.
+* **Quality Score:** 4 (Profile view, occlusion by hair, and wearing a hat)",1,693,815,558.12,4.69
+Mookie Betts,Mookie Betts_4.jpg,No,"side view, wearing hat",4,607,560,31.43,3.84
+Mookie Betts,Mookie Betts_6.jpg,No,"profile view, sunglasses covering eyes, heavy shadows on face",2,600,546,157.42,4.1
+Mookie Betts,040922js053.jpg,No,"**Image Assessment Report**
+
+* **Suitable for Training:** No
+* **Explanations:** Side view with partial face coverage, wearing cap, blurry, shadows on face, looking down.
+* **Quality Score:** 2 (very low due to multiple severe issues)
+
+This image does not meet the strict requirements for a training image. The side angle and partial face coverage make it difficult to assess facial features accurately. Additionally, the presence of a cap occludes part of the face, while bluriness and shadows further compromise the overall quality.",1,1709,2153,2724.75,6.13
+Mookie Betts,041722jo276.jpg,Yes,"perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",10,745,888,537.9,4.43
+Mookie Betts,042022jo152.jpg,No,"side angle, wearing helmet with visor",1,918,1026,838.57,4.0
+Mookie Betts,042022js035.jpg,No,"**Assessment:** Not suitable for training, multiple issues
+
+**Reasoning:**
+
+* The image shows a side view of the person's face, rather than a frontal view.
+* Only one eye is visible on the left side of the image.
+* There are dark shadows on the right side of the face, which may indicate poor lighting or heavy backlighting.
+* The overall quality of the image appears to be low due to the blurriness and lack of sharpness.
+
+**Quality Score:** 4",1,1211,1312,1094.01,5.81
+Mookie Betts,042422js115039.jpg,No,"side angle, eyes not clearly visible, wearing cap, blurry, shadows on face",2,1118,1610,1127.03,4.25
+Mookie Betts,042022jo045.jpg,No,"side profile, right eye partially occluded by helmet, blurry focus",4,655,687,373.84,9.3
+Mookie Betts,103124js616.JPG,No,"**Assessment of the Image**
+
+The provided image does not meet our strict requirements for facial analysis training.
+
+**Suitability:** No
+
+**Explanation:** The image shows a person wearing a white beanie with black stripes and a black hoodie, which covers their right eye. Additionally, the lighting is not ideal, as it comes from the side, creating harsh shadows on the face. This results in an unbalanced composition that could lead to inaccurate facial analysis.
+
+**Quality Score:** 3
+
+This assessment indicates that the image is not suitable for training due to significant issues with occlusion (the beanie covering one eye) and poor lighting, which could negatively impact the accuracy of AI-driven facial recognition systems.",1,986,944,620.12,7.0
+Mookie Betts,040922js007.jpg,Yes,"**Assessment:** Not suitable for training
+
+**Reasoning:**
+
+* The image shows a profile view of the individual's face, rather than a frontal view.
+* Only one eye is visible.
+* The person is wearing a hat, which partially covers their face.
+
+These issues make the image unsuitable for use in AI training.",1,700,760,219.64,5.04

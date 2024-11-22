@@ -141,7 +141,7 @@ def extract_json_from_text(text):
         return {
             "suitable": "No" if any(negative in text.lower() for negative in ["blur", "dark", "occlu", "poor", "low"]) else "Yes",
             "explanation": text.strip(),
-            "confidence": 0.5  # Default confidence when we have to parse non-JSON response
+            "quality_score": 1  # Default quality score when we have to parse non-JSON response
         }
 
 def check_face_quality(image_path):
@@ -154,43 +154,66 @@ def check_face_quality(image_path):
         print(f"\nProcessing image: {image_path}")
         dimensions, file_size = get_image_info(image_path)
         
-        prompt = """You are a face quality assessment expert. Analyze this image for facial recognition training quality.
-Consider these factors and provide a structured response:
-1. Face visibility and clarity
-2. Lighting conditions
-3. Face orientation
-4. Image resolution
-5. Background distraction
-6. Facial expression
-7. Occlusions (glasses, masks, etc.)
+        prompt = """You are a VERY strict face quality assessment expert. Your job is to be extremely critical and selective.
+Your primary goal is to find issues with facial images for AI training. Be harsh in your assessment - only the absolute best images should pass.
+
+STRICT REQUIREMENTS for a "Yes":
+1. Face MUST be clearly facing the camera (frontal view)
+2. BOTH eyes must be clearly visible
+3. NO occlusions (hats, sunglasses, masks, hands, etc.)
+4. Face must be well-lit and in sharp focus
+5. Neutral or natural expression preferred
+6. High enough resolution
+7. No extreme shadows or backlighting
+
+AUTOMATIC REJECTION if any of these are present:
+- Profile or side view
+- Single eye visible
+- Face partially covered
+- Blurry or low resolution
+- Extreme expressions
+- Heavy shadows or poor lighting
+- Any occlusions (hats, glasses, etc.)
+
+QUALITY SCORE (1-10):
+10: Perfect training image - frontal, clear, well-lit, no issues
+9: Excellent - very minor imperfections
+8: Good - slight angle or lighting issues
+7: Usable - noticeable but acceptable issues
+1-6: Not suitable for training - multiple issues
 
 You must respond in this exact JSON format:
 {
     "suitable": "Yes/No",
-    "explanation": "Detailed reason for the decision",
-    "confidence": 0.XX
+    "explanation": "List key issues or qualities",
+    "quality_score": X
 }
 
-Where:
-- "suitable" must be exactly "Yes" or "No"
-- "explanation" should be a clear, detailed reason
-- "confidence" must be a number between 0 and 1 (e.g., 0.95)
+Requirements:
+- "suitable" must be exactly "Yes" or "No" (be very strict, reject if in doubt)
+- "explanation" should be a single line of specific issues or qualities
+- "quality_score" must be 1-10 (only 7+ should be marked as suitable)
 
-Example response:
+Example responses:
 {
     "suitable": "Yes",
-    "explanation": "Clear frontal face, good lighting, neutral expression, no occlusions",
-    "confidence": 0.95
+    "explanation": "perfect frontal view, both eyes clear, well-lit, sharp, no occlusions",
+    "quality_score": 10
 }
 
-Another example:
 {
     "suitable": "No",
-    "explanation": "Face is blurry, poor lighting, and partially occluded by hat",
-    "confidence": 0.88
+    "explanation": "side angle, right eye not visible, wearing cap",
+    "quality_score": 3
 }
 
-Remember: Your response MUST be valid JSON with these exact fields."""
+{
+    "suitable": "No",
+    "explanation": "blurry, shadows on face, looking down",
+    "quality_score": 2
+}
+
+Remember: Your job is to be extremely critical. When in doubt, reject the image. We only want the absolute best quality images for training."""
 
         try:
             print("Sending request to Ollama...")  # Debug log
@@ -217,8 +240,8 @@ Remember: Your response MUST be valid JSON with these exact fields."""
                 # Validate and clean up the response
                 if not isinstance(assessment.get('suitable'), str):
                     assessment['suitable'] = str(assessment.get('suitable', 'Error'))
-                if not isinstance(assessment.get('confidence'), (int, float)):
-                    assessment['confidence'] = 0.5
+                if not isinstance(assessment.get('quality_score'), (int, float)):
+                    assessment['quality_score'] = 1
                 
                 # Add additional metrics
                 processing_time = time.time() - start_time
@@ -236,7 +259,7 @@ Remember: Your response MUST be valid JSON with these exact fields."""
                 return {
                     "suitable": "Error",
                     "explanation": f"Error parsing model response: {str(e)}",
-                    "confidence": 0,
+                    "quality_score": 1,
                     "processing_time": round(time.time() - start_time, 2),
                     "width": dimensions[0] if dimensions else None,
                     "height": dimensions[1] if dimensions else None,
@@ -248,7 +271,7 @@ Remember: Your response MUST be valid JSON with these exact fields."""
             return {
                 "suitable": "Error",
                 "explanation": f"Request timed out after {config.TIMEOUT_SECONDS} seconds",
-                "confidence": 0,
+                "quality_score": 1,
                 "processing_time": round(time.time() - start_time, 2),
                 "width": dimensions[0] if dimensions else None,
                 "height": dimensions[1] if dimensions else None,
@@ -259,7 +282,7 @@ Remember: Your response MUST be valid JSON with these exact fields."""
             return {
                 "suitable": "Error",
                 "explanation": f"Error calling Ollama API: {str(e)}",
-                "confidence": 0,
+                "quality_score": 1,
                 "processing_time": round(time.time() - start_time, 2),
                 "width": dimensions[0] if dimensions else None,
                 "height": dimensions[1] if dimensions else None,
@@ -271,7 +294,7 @@ Remember: Your response MUST be valid JSON with these exact fields."""
         return {
             "suitable": "Error",
             "explanation": f"Error processing image: {str(e)}",
-            "confidence": 0,
+            "quality_score": 1,
             "processing_time": round(time.time() - start_time, 2),
             "width": dimensions[0] if dimensions else None,
             "height": dimensions[1] if dimensions else None,
@@ -318,7 +341,7 @@ def process_face_directory(input_dir, debug=False):
     
     with open(csv_filename, 'w', newline='') as csvfile:
         csvwriter = csv.writer(csvfile)
-        csvwriter.writerow(['Image', 'Quality', 'Explanation', 'Confidence', 'Width', 'Height', 'File_Size_KB', 'Processing_Time_Sec'])
+        csvwriter.writerow(['Folder', 'Image', 'Quality', 'Explanation', 'Score', 'Width', 'Height', 'File_Size_KB', 'Processing_Time_Sec'])
         
         # Process images in batches
         for i in range(0, len(image_files), config.BATCH_SIZE):
@@ -333,11 +356,16 @@ def process_face_directory(input_dir, debug=False):
             
             for image_path in tqdm(batch, desc=f"Processing batch {i//config.BATCH_SIZE + 1}"):
                 result = check_face_quality(image_path)
+                
+                # Get parent folder name
+                folder_name = os.path.basename(os.path.dirname(image_path))
+                
                 csvwriter.writerow([
+                    folder_name,
                     os.path.basename(image_path),
                     result.get('suitable', 'Error'),
                     result.get('explanation', 'Unknown error'),
-                    result.get('confidence', 0),
+                    result.get('quality_score', 1),
                     result.get('width', ''),
                     result.get('height', ''),
                     result.get('file_size_kb', ''),
@@ -347,9 +375,10 @@ def process_face_directory(input_dir, debug=False):
                 
                 if debug:
                     print(f"\nDebug: Result for {os.path.basename(image_path)}:")
+                    print(f"Folder: {folder_name}")
                     print(f"Quality: {result.get('suitable', 'Error')}")
                     print(f"Explanation: {result.get('explanation', 'Unknown error')}")
-                    print(f"Confidence: {result.get('confidence', 0)}")
+                    print(f"Score: {result.get('quality_score', 1)}/10")
                     print(f"Dimensions: {result.get('width', '')}x{result.get('height', '')}")
                     print(f"File Size: {result.get('file_size_kb', '')} KB")
                     print(f"Processing Time: {result.get('processing_time', '')} sec")
