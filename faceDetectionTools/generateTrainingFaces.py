@@ -6,13 +6,61 @@ import time
 from collections import defaultdict
 import tensorflow as tf
 from mtcnn import MTCNN
-from typing import NamedTuple
+from typing import NamedTuple, List, Dict, Tuple, Optional
 import subprocess
 import os
 import face_recognition
 from scipy.spatial.distance import cosine
 import multiprocessing
+from tqdm import tqdm
+import json
+from dataclasses import dataclass, asdict
+import logging
+
 from .face_quality import FaceQualityAnalyzer
+
+@dataclass
+class FaceDetectionConfig:
+    output_dir: str
+    max_faces: int
+    images_per_face: int
+    min_face_size: int
+    min_confidence: float
+    min_quality_score: float
+    batch_size: int
+    frames_per_second: float
+    use_gpu: bool
+    gpu_memory_fraction: float
+    face_similarity_threshold: float
+    skip_existing: bool
+    save_metadata: bool
+    quality_metrics: Dict[str, Any]
+    logging: Dict[str, Any]
+
+    @classmethod
+    def from_file(cls, config_path: str) -> 'FaceDetectionConfig':
+        with open(config_path, 'r') as f:
+            config_dict = json.load(f)
+        return cls(**config_dict)
+
+    @classmethod
+    def get_default_config(cls) -> 'FaceDetectionConfig':
+        default_config_path = Path(__file__).parent / 'faceGenConfig.json'
+        return cls.from_file(str(default_config_path))
+
+def parse_args() -> Tuple[str, FaceDetectionConfig]:
+    parser = argparse.ArgumentParser(description='Extract faces from video for training')
+    parser.add_argument('video_path', type=str, help='Path to input video file')
+    parser.add_argument('--config', type=str, help='Path to configuration file (optional)')
+    
+    args = parser.parse_args()
+    
+    if args.config:
+        config = FaceDetectionConfig.from_file(args.config)
+    else:
+        config = FaceDetectionConfig.get_default_config()
+    
+    return args.video_path, config
 
 class FaceOccurrence(NamedTuple):
     frame_num: int
@@ -20,196 +68,260 @@ class FaceOccurrence(NamedTuple):
     quality_score: float
     quality_metrics: dict
     embedding: np.ndarray
+    bbox: Tuple[int, int, int, int]  # x, y, w, h
 
-def get_face_quality(face_img, quality_analyzer):
-    """Get comprehensive face quality score and metrics"""
-    score, metrics = quality_analyzer.get_face_quality_score(face_img)
-    return score, metrics
-
-def extract_faces(video_path: str, output_folder: str, max_faces: int = 30, images_per_face: int = 30, 
-                 batch_size: int = 4, frames_per_second: float = 1.0) -> None:
-    output_path = Path(output_folder)
-    output_path.mkdir(parents=True, exist_ok=True)
-
-    # Set up GPU configuration
+def configure_gpu(memory_fraction: float = 1.0) -> bool:
+    """Configure GPU settings for optimal performance."""
     gpus = tf.config.experimental.list_physical_devices('GPU')
-    if gpus:
-        try:
-            for gpu in gpus:
-                tf.config.experimental.set_memory_growth(gpu, True)
-            print(f"GPU acceleration enabled. Found {len(gpus)} GPU(s)")
-        except RuntimeError as e:
-            print(f"GPU configuration failed: {e}")
-    else:
+    if not gpus:
         print("No GPU found. Using CPU only.")
+        return False
 
-    # Initialize face quality analyzer
-    quality_analyzer = FaceQualityAnalyzer()
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+            tf.config.experimental.set_virtual_device_configuration(
+                gpu,
+                [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=1024 * 1024 * memory_fraction)]
+            )
+        print(f"GPU acceleration enabled. Found {len(gpus)} GPU(s)")
+        return True
+    except RuntimeError as e:
+        print(f"GPU configuration failed: {e}")
+        return False
 
+def get_optimal_batch_size(config: FaceDetectionConfig, has_gpu: bool) -> int:
+    """Determine optimal batch size based on available GPU memory."""
+    if not has_gpu:
+        return 1
+
+    try:
+        gpu = tf.config.experimental.get_visible_devices('GPU')[0]
+        gpu_memory = tf.config.experimental.get_memory_info(gpu)['free']
+        return min(config.batch_size, max(1, int(gpu_memory / (1024 * 1024 * 100))))
+    except:
+        return config.batch_size
+
+def process_video_info(video_path: str) -> Tuple[cv2.VideoCapture, int, int, float]:
+    """Get video information and validate the video file."""
     video = cv2.VideoCapture(video_path)
     if not video.isOpened():
-        print(f"Error: Could not open video file {video_path}")
-        return
+        raise ValueError(f"Could not open video file {video_path}")
 
     total_frames = int(video.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = int(video.get(cv2.CAP_PROP_FPS))
     duration = total_frames / fps
 
-    print(f"Processing video: {video_path}")
+    print(f"\nVideo Information:")
+    print(f"Path: {video_path}")
     print(f"Total frames: {total_frames}")
-    print(f"Video FPS: {fps}")
+    print(f"FPS: {fps}")
     print(f"Duration: {duration:.2f} seconds")
-    print(f"Sampling at {frames_per_second} frame(s) per second")
 
-    face_occurrences: dict[int, list[FaceOccurrence]] = defaultdict(list)
+    return video, total_frames, fps, duration
+
+def detect_faces_batch(detector: MTCNN, frames: List[np.ndarray], 
+                      frame_numbers: List[int], config: FaceDetectionConfig,
+                      quality_analyzer: FaceQualityAnalyzer) -> List[FaceOccurrence]:
+    """Detect and analyze faces in a batch of frames."""
+    face_occurrences = []
+    
+    # Process frames in parallel using multiprocessing
+    with multiprocessing.Pool() as pool:
+        batch_faces = pool.map(detector.detect_faces, frames)
+
+    for i, faces in enumerate(batch_faces):
+        frame = frames[i]
+        frame_num = frame_numbers[i]
+        
+        for face in faces:
+            if face['confidence'] < config.min_confidence:
+                continue
+
+            x, y, w, h = face['box']
+            face_img = frame[y:y+h, x:x+w]
+            
+            # Skip if face is too small
+            if w < config.min_face_size or h < config.min_face_size:
+                continue
+
+            # Get comprehensive face quality metrics
+            quality_score, quality_metrics = quality_analyzer.get_face_quality_score(face_img)
+            if quality_score < config.min_quality_score:
+                continue
+
+            try:
+                face_encoding = face_recognition.face_encodings(face_img)[0]
+            except IndexError:
+                continue
+
+            face_occurrences.append(
+                FaceOccurrence(
+                    frame_num=frame_num,
+                    image=face_img,
+                    quality_score=quality_score,
+                    quality_metrics=quality_metrics,
+                    embedding=face_encoding,
+                    bbox=face['box']
+                )
+            )
+
+    return face_occurrences
+
+def save_face_data(face_id: int, occurrences: List[FaceOccurrence], 
+                  output_path: Path, images_per_face: int) -> None:
+    """Save face images and metadata."""
+    face_folder = output_path / f"face{face_id:02d}"
+    face_folder.mkdir(exist_ok=True)
+
+    # Sort occurrences by quality score
+    occurrences.sort(key=lambda x: x.quality_score, reverse=True)
+
+    # Save face metadata
+    metadata = {
+        "face_id": face_id,
+        "total_occurrences": len(occurrences),
+        "best_quality_score": occurrences[0].quality_score,
+        "average_quality_score": np.mean([o.quality_score for o in occurrences]),
+        "quality_metrics": occurrences[0].quality_metrics,
+        "bbox_statistics": {
+            "average_size": np.mean([o.bbox[2] * o.bbox[3] for o in occurrences]),
+            "min_size": min([o.bbox[2] * o.bbox[3] for o in occurrences]),
+            "max_size": max([o.bbox[2] * o.bbox[3] for o in occurrences])
+        }
+    }
+    
+    with open(face_folder / "metadata.json", "w") as f:
+        json.dump(metadata, f, indent=2)
+
+    # Select best quality samples with temporal distribution
+    if len(occurrences) <= images_per_face:
+        samples = occurrences
+    else:
+        # Divide occurrences into segments for temporal distribution
+        segment_size = len(occurrences) // images_per_face
+        samples = []
+        for i in range(0, len(occurrences), segment_size):
+            segment = occurrences[i:i + segment_size]
+            samples.append(max(segment, key=lambda x: x.quality_score))
+        samples = samples[:images_per_face]
+
+    # Save selected samples with quality information
+    for i, sample in enumerate(samples):
+        output_file = face_folder / f"frame_{sample.frame_num:04d}_quality_{sample.quality_score:.2f}.jpg"
+        cv2.imwrite(str(output_file), cv2.cvtColor(sample.image, cv2.COLOR_RGB2BGR))
+
+def extract_faces(video_path: str, config: FaceDetectionConfig) -> None:
+    """
+    Extract high-quality face images from a video with advanced face detection and quality analysis.
+    
+    Args:
+        video_path: Path to the input video file
+        config: Configuration for face detection parameters
+    """
+    # Setup and validation
+    output_path = Path(config.output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    
+    has_gpu = configure_gpu(config.gpu_memory_fraction)
+    config.batch_size = get_optimal_batch_size(config, has_gpu)
+    
+    # Initialize components
+    quality_analyzer = FaceQualityAnalyzer()
+    detector = MTCNN(min_face_size=config.min_face_size)
+    
+    # Process video
+    video, total_frames, fps, duration = process_video_info(video_path)
+    frame_interval = max(1, int(fps / config.frames_per_second))
+    
+    # Initialize tracking variables
+    face_occurrences: Dict[int, List[FaceOccurrence]] = defaultdict(list)
+    known_face_encodings: List[np.ndarray] = []
+    known_face_ids: List[int] = []
     face_count = 0
     processed_frames = 0
+    
+    print("\nFirst pass: Identifying unique faces...")
     start_time = time.time()
-
-    # Initialize MTCNN detector with larger min_face_size for better detection
-    detector = MTCNN(min_face_size=40)
-
-    # Initialize face recognition model
-    known_face_encodings = []
-    known_face_ids = []
-
-    # Calculate frame interval based on desired frames per second
-    frame_interval = max(1, int(fps / frames_per_second))
-
-    # Determine optimal batch size based on available GPU memory
-    if gpus:
-        try:
-            gpu = tf.config.experimental.get_visible_devices('GPU')[0]
-            gpu_memory = tf.config.experimental.get_memory_info(gpu)['free']
-            batch_size = min(batch_size, max(1, int(gpu_memory / (1024 * 1024 * 100))))  # Adjust based on GPU memory
-            print(f"Adjusted batch size to {batch_size} based on available GPU memory")
-        except:
-            pass
-
-    print("First pass: Identifying unique faces...")
-    while True:
-        frames = []
-        frame_numbers = []
-        for _ in range(batch_size):
-            # Skip frames to achieve desired sampling rate
-            for _ in range(frame_interval):
-                ret, frame = video.read()
+    
+    with tqdm(total=total_frames, desc="Processing frames") as pbar:
+        while True:
+            frames = []
+            frame_numbers = []
+            
+            # Read batch of frames
+            for _ in range(config.batch_size):
+                for _ in range(frame_interval):
+                    ret, frame = video.read()
+                    if not ret:
+                        break
+                    processed_frames += 1
+                    pbar.update(1)
+                
                 if not ret:
                     break
-                processed_frames += 1
-            if not ret:
-                break
-            frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-            frame_numbers.append(processed_frames)
-
-        if not frames:
-            break
-
-        if processed_frames % 100 == 0:
-            progress = (processed_frames / total_frames) * 100
-            elapsed_time = time.time() - start_time
-            eta = (elapsed_time / processed_frames) * (total_frames - processed_frames)
-            print(f"Progress: {progress:.2f}% (ETA: {eta:.2f}s)")
-
-        # Process frames in parallel using multiprocessing for face detection
-        with multiprocessing.Pool() as pool:
-            batch_faces = pool.map(detector.detect_faces, frames)
-
-        for i, faces in enumerate(batch_faces):
-            for face in faces:
-                x, y, w, h = face['box']
-                confidence = face['confidence']
-                
-                # Skip low confidence detections
-                if confidence < 0.95:
-                    continue
                     
-                face_img = frames[i][y:y+h, x:x+w]
-                
-                # Check face quality with comprehensive metrics
-                quality_score, quality_metrics = get_face_quality(face_img, quality_analyzer)
-                if quality_score < 0.6:  # Increased quality threshold
-                    continue
-                
-                # Get face embedding
-                try:
-                    face_encoding = face_recognition.face_encodings(face_img)[0]
-                except IndexError:
-                    continue
-                
-                # Compare with existing faces
+                frames.append(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+                frame_numbers.append(processed_frames)
+
+            if not frames:
+                break
+
+            # Process batch
+            new_occurrences = detect_faces_batch(detector, frames, frame_numbers, config, quality_analyzer)
+
+            # Group faces by identity
+            for occurrence in new_occurrences:
                 new_face = True
                 if known_face_encodings:
-                    # Compare face distances
-                    face_distances = [cosine(face_encoding, enc) for enc in known_face_encodings]
+                    face_distances = [cosine(occurrence.embedding, enc) for enc in known_face_encodings]
                     min_distance = min(face_distances)
-                    if min_distance < 0.6:  # Threshold for face similarity
+                    if min_distance < config.face_similarity_threshold:
                         face_id = known_face_ids[face_distances.index(min_distance)]
                         new_face = False
-                        face_occurrences[face_id].append(
-                            FaceOccurrence(frame_numbers[i], face_img, quality_score, quality_metrics, face_encoding)
-                        )
-                
-                if new_face and face_count < max_faces:
+                        face_occurrences[face_id].append(occurrence)
+
+                if new_face and face_count < config.max_faces:
                     face_count += 1
-                    known_face_encodings.append(face_encoding)
+                    known_face_encodings.append(occurrence.embedding)
                     known_face_ids.append(face_count)
-                    face_occurrences[face_count].append(
-                        FaceOccurrence(frame_numbers[i], face_img, quality_score, quality_metrics, face_encoding)
-                    )
-                    print(f"New face detected! Total unique faces: {face_count}")
+                    face_occurrences[face_count].append(occurrence)
 
     video.release()
-    print(f"First pass complete. {face_count} unique faces found.")
+    print(f"\nFirst pass complete. Found {face_count} unique faces.")
 
-    print("Second pass: Extracting distributed samples for each face...")
-    for face_id, occurrences in face_occurrences.items():
-        face_folder = output_path / f"face{face_id:02d}"
-        face_folder.mkdir(exist_ok=True)
-        
-        # Sort occurrences by quality score
-        occurrences.sort(key=lambda x: x.quality_score, reverse=True)
-        
-        # Save quality metrics for the best sample
-        best_metrics = occurrences[0].quality_metrics
-        with open(face_folder / "quality_metrics.txt", "w") as f:
-            for metric, value in best_metrics.items():
-                f.write(f"{metric}: {value}\n")
-        
-        # Select best quality samples with good distribution
-        if len(occurrences) <= images_per_face:
-            samples = occurrences
-        else:
-            # Divide occurrences into segments and take the best quality frame from each segment
-            segment_size = len(occurrences) // images_per_face
-            samples = []
-            for i in range(0, len(occurrences), segment_size):
-                segment = occurrences[i:i + segment_size]
-                samples.append(max(segment, key=lambda x: x.quality_score))
-            samples = samples[:images_per_face]
+    print("\nSecond pass: Saving face data...")
+    for face_id, occurrences in tqdm(face_occurrences.items(), desc="Saving faces"):
+        save_face_data(face_id, occurrences, output_path, config.images_per_face)
 
-        # Save selected samples
-        for i, sample in enumerate(samples):
-            output_file = face_folder / f"frame_{sample.frame_num:04d}_quality_{sample.quality_score:.2f}.jpg"
-            cv2.imwrite(str(output_file), cv2.cvtColor(sample.image, cv2.COLOR_RGB2BGR))
-
-    print(f"Processing complete! Found {face_count} unique faces.")
+    print(f"\nProcessing complete!")
+    print(f"Found {face_count} unique faces")
     print(f"Results saved to: {output_path}")
     print(f"Total processing time: {time.time() - start_time:.2f} seconds")
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="Extract face images from a video file.")
-    parser.add_argument("video_path", help="Path to the input video file")
-    parser.add_argument("--output", default="foundFaces", help="Output folder name")
-    parser.add_argument("--max_faces", type=int, default=30, help="Maximum number of unique faces to extract")
-    parser.add_argument("--images_per_face", type=int, default=30, help="Number of images to extract per face")
-    parser.add_argument("--batch_size", type=int, default=4, help="Number of frames to process in each batch")
-    parser.add_argument("--frames_per_second", type=float, default=1.0, help="Number of frames to sample per second")
-    args = parser.parse_args()
+def main():
+    video_path, config = parse_args()
+    
+    # Configure logging
+    logging.basicConfig(level=getattr(logging, config.logging['level']))
+    logger = logging.getLogger(__name__)
+    
+    # Configure GPU
+    if config.use_gpu:
+        configure_gpu(config.gpu_memory_fraction)
+    
+    # Create output directory
+    output_dir = Path(config.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # Initialize face detector with config parameters
+    face_detector = MTCNN(
+        min_face_size=config.min_face_size,
+        steps_threshold=[0.6, 0.7, config.min_confidence]
+    )
+    
+    # Process video
+    extract_faces(video_path, config)
 
-    try:
-        extract_faces(args.video_path, args.output, args.max_faces, args.images_per_face, args.batch_size, args.frames_per_second)
-    except Exception as e:
-        print(f"An error occurred: {str(e)}")
-        import traceback
-        traceback.print_exc()
+if __name__ == '__main__':
+    main()
