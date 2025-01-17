@@ -22,6 +22,11 @@ This repository contains a collection of Python scripts designed to facilitate v
 ### createTestVid24.py
 - Generates a test video with 24 audio tracks, each with incrementally different frequencies.
 
+### batchRename.py
+- Batch renames files in a specified folder using a base filename and incremental numbering while preserving original file extensions.
+- Usage: `./batchRename.py <folder_path> <base_filename>`
+- Example: `./batchRename.py ./videos episode` will rename files to episode_001.ext, episode_002.ext, etc.
+
 ## Prerequisites
 
 Before running these scripts, you need to have Python installed on your system along with the following packages:
