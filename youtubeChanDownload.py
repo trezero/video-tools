@@ -5,19 +5,21 @@ import argparse
 
 # Set these variables
 SAVE_PATH = 'downloads/'
-MAX_DURATION = 5 * 60  # 5 minutes in seconds
+MAX_DURATION = 20 * 60  # 20 minutes in seconds
+MAX_PAGES = 5
 
 def get_channel_name(ydl, channel_url):
     info = ydl.extract_info(channel_url, download=False)
     return info.get('channel', 'Unknown_Channel').replace(' ', '_')
 
-def download_channel_videos(channel_url, save_path, max_duration):
+def download_channel_videos(channel_url, save_path, max_duration, max_pages):
     ydl_opts = {
         'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
         'ignoreerrors': True,
         'extract_flat': 'in_playlist',
         'force_generic_extractor': False,
         'verbose': True,
+        'playlistend': max_pages * 30,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -68,6 +70,7 @@ def main():
     parser.add_argument("channel_url", help="URL of the YouTube channel")
     parser.add_argument("--save_path", default=SAVE_PATH, help="Path to save downloaded videos")
     parser.add_argument("--max_duration", type=int, default=MAX_DURATION, help="Maximum duration of videos to download (in seconds)")
+    parser.add_argument("--max_pages", type=int, default=MAX_PAGES, help="Maximum number of pages to process")
     
     args = parser.parse_args()
 
@@ -77,8 +80,9 @@ def main():
     print(f"Downloading videos from: {args.channel_url}")
     print(f"Base save path: {args.save_path}")
     print(f"Filtering videos up to {args.max_duration} seconds")
+    print(f"Limiting to a maximum of {args.max_pages} pages")
     
-    download_channel_videos(args.channel_url, args.save_path, args.max_duration)
+    download_channel_videos(args.channel_url, args.save_path, args.max_duration, args.max_pages)
     
     print("Download process completed.")
 
