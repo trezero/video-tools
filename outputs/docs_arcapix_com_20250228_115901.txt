@@ -1,0 +1,3337 @@
+# Administration Guide — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/index.html
+
+Administration Guide — Ngenea Hub
+
+Skip to content
+
+Administration Guide
+
+Â¶
+
+Ngenea Hub harnesses the power of
+
+Ngenea
+
+to provide global workflows, enabling your data to be where you need it, when you need it.
+
+1. Installation
+
+2. Upgrade
+
+2.1. Before you start
+
+2.2. Backup Workflows
+
+2.3. Stop Services
+
+2.4. Upgrade Packages
+
+2.5. Upgrade Configurations
+
+2.6. Restart Services
+
+2.7. Validation
+
+2.8. Restoring Workflows
+
+3. Configuration
+
+3.1. Hub Initial Configuration
+
+3.2. Hub Configuration
+
+3.2.1. Settings
+
+3.2.1.1. Mandatory Settings
+
+3.2.1.2. Optional settings
+
+3.2.2. Enabling LDAP/Active Directory Authentication
+
+3.2.3. Broker Settings
+
+3.2.4. Server Configurations
+
+3.2.5. Docker Compose configuration
+
+3.3. Worker Configuration
+
+3.3.1. Controlling Functions
+
+3.3.2. Custom Queues
+
+3.3.3. Passing Custom Config File to Ngenea Worker
+
+3.3.3.1. To Run ngenea-worker with multiple sites
+
+3.3.4. Setting Ngenea Worker debug level in systemd service script
+
+3.4. Hub Messaging Queue Configuration
+
+3.4.1. Selecting Messaging Queue
+
+3.4.2. Redis Setting Files
+
+3.4.3. RabbitMQ Setting Files
+
+3.4.4. Admin Interface
+
+3.4.5. Limitations
+
+4. Feature Set-up
+
+4.1. Search
+
+4.1.1. Prerequisites
+
+4.1.2. Configuration
+
+4.1.2.1. Search Backend
+
+4.1.2.2. Elasticsearch URL
+
+4.1.3. Search UI
+
+4.2. Cloud Functions
+
+4.2.1. GCP Cloud Function
+
+4.2.2. AWS Lambda Function
+
+4.2.2.1. Create the IAM policy and role
+
+4.2.2.2. Create the Lambda function
+
+4.2.3. Configuration
+
+4.2.3.1. version
+
+4.2.3.2. hub_access
+
+4.2.3.3. sites
+
+4.2.3.4. actions
+
+4.2.3.5. optional
+
+4.2.3.6. vendor
+
+4.2.3.7. vendors
+
+4.2.3.8. Complete Example
+
+4.3. Ngenea Worker Plugins
+
+4.3.1. Creating your plugin
+
+4.3.1.1. Example plugin creation
+
+4.3.1.2. External Dependencies
+
+4.3.1.3. Installing custom plugins
+
+4.3.2. Managing plugins
+
+4.3.2.1. Enabling your plugin
+
+4.3.2.2. Installing your plugin
+
+4.3.2.3. Uninstalling your plugin
+
+4.3.3. Custom Tasks
+
+4.3.3.1. The Structure of a Task
+
+4.3.3.1.1. Arguments
+
+4.3.3.1.2. Return Payload
+
+4.3.3.2. Support for Streaming Paths from API
+
+4.3.3.3. Queues
+
+4.3.4. Example Plugins
+
+4.3.4.1. Email notification task
+
+4.3.4.2. Running additional script
+
+4.3.5. SubDAG Helpers
+
+4.4. Disaster Recovery / Cold Failover
+
+4.4.1. Setup
+
+4.4.1.1. Configure datastore
+
+4.4.1.2. Configure Networking
+
+4.4.1.3. Install Ngenea Hub
+
+4.4.2. Performing failover
+
+4.4.3. Migration from local datastore
+
+4.5. External SSL
+
+4.5.1. Installing NGINX
+
+4.5.2. Configuration for SSL Termination and Reverse Proxy using OpenSSL
+
+4.5.2.1. Create Self-Signed Certificates for Nginx
+
+4.5.2.2. Creating configuration file for Nginx
+
+4.5.3. Configuration for SSL Termination and Reverse Proxy using Certbot and LetsEncrypt (Another method)
+
+4.5.3.1. Add trusted SSL Certificates from Letsencrypt
+
+4.5.4. HTTPS Configuration for NgeneaHub
+
+4.5.4.1. Reload the Nginx service after you have made some configuration changes
+
+4.5.4.2. To auto-renew the certificates, Run
+
+4.6. LDAP / Active Directory Login
+
+4.6.1. Configuration
+
+4.6.1.1. Example Configurations
+
+4.6.2. Managing users and groups from AD in HUB
+
+4.7. Queues
+
+4.7.1. Configuration
+
+4.7.2. Functions
+
+4.7.2.1. Disabling Functions
+
+4.7.3. Queue discovery
+
+4.7.4. Memory considerations
+
+4.7.5. Workflows
+
+5. Usage
+
+5.1. Web Interface
+
+5.1.1. Authentication
+
+5.1.1.1. Login
+
+5.1.1.2. Logout
+
+5.1.2. Browser
+
+5.1.2.1. Recent Jobs
+
+5.1.2.2. Search
+
+5.1.2.2.1. Managing the search filters from the dialog
+
+5.1.2.2.2. Submitting the search and viewing search results
+
+5.1.2.2.3. Advanced usage: Managing the search filters from the search bar
+
+5.1.2.3. Browse Directories
+
+5.1.2.3.1. Migrate
+
+5.1.2.3.2. Premigrate
+
+5.1.2.3.3. Recall
+
+5.1.2.3.4. Send
+
+5.1.3. Jobs
+
+5.1.3.1. Pagination
+
+5.1.3.2. Apply Filter
+
+5.1.3.3. Job ID
+
+5.1.3.4. Owner
+
+5.1.4. Administration
+
+5.1.4.1. Sites
+
+5.1.4.1.1. Add Site
+
+5.1.4.1.2. Delete Site
+
+5.1.4.2. Users
+
+5.1.4.2.1. Add User
+
+5.1.4.2.2. Activate User
+
+5.1.4.2.3. Deactivate User
+
+5.1.4.3. File Status Types
+
+5.2. API
+
+5.2.1. Reference
+
+5.2.2. Authentication
+
+5.2.2.1. JWT Authentication
+
+5.2.2.2. Client Keys
+
+5.2.2.2.1. Creating Client Keys
+
+5.2.2.2.2. Using Client Keys
+
+5.2.3. Submitting Workflow
+
+5.2.3.1. Migrate
+
+5.2.4. Trailing Slashes
+
+5.3. Monitoring and Management
+
+5.3.1. systemd service
+
+5.3.2. ngeneahubctl cli tool
+
+5.3.3. Docker containers
+
+5.3.4. Hub Task Metrics
+
+5.3.5. Health endpoints
+
+5.3.5.1. }
+
+5.3.5.2. }
+
+5.4. Custom Workflows
+
+5.4.1. Defining workflows
+
+5.4.1.1. Filter Rules
+
+5.4.1.2. Runtime fields
+
+5.4.2. Running Workflows
+
+5.4.2.1. Discovery Steps
+
+5.4.2.1.1. Discovery Options
+
+5.4.3. Includes and Excludes
+
+5.5. Jobs
+
+5.5.1. Housekeeping
+
+5.6. Site Sync
+
+5.6.1. Schedule
+
+5.6.2. Workflow
+
+5.6.3. Additional Options
+
+5.6.4. Troubleshooting
+
+5.7. Bidirectional Site Sync
+
+5.7.1. Schedule
+
+5.7.2. Workflow
+
+5.7.3. Troubleshooting
+
+5.8. Search
+
+5.8.1. Submitting a query
+
+5.8.1.1. Filters
+
+5.8.2. Retrieving results
+
+5.8.2.1. Proxies
+
+5.8.2.2. Parameters
+
+5.8.2.3. Merged results
+
+5.8.2.4. Results grouped by name
+
+5.8.3. Max Results
+
+5.8.4. Housekeeping
+
+5.9. Controlling Bandwidth Usage
+
+5.9.1. Enabling the bandwidth feature in the UI
+
+5.9.2. Checking Node status
+
+5.9.3. Registering Datastores
+
+5.9.3.1. Cloud IPAddresses
+
+5.9.3.2. Using manual IP addresses
+
+5.9.4. Linking a Datastore to a Site
+
+5.9.5. Applying the bandwidth
+
+5.10. Configuration
+
+5.10.1. Global Configurations
+
+5.10.1.1. Available Settings
+
+5.10.1.2. REST API
+
+5.10.1.3. Settings Migration
+
+5.10.2. Site-specific Configurations
+
+5.10.2.1. Available Settings
+
+5.10.2.1.1. File Batching
+
+5.10.2.1.2. Dynamic File Batching
+
+5.10.2.2. REST API
+
+5.11. Certificate Lifetime
+
+5.11.1. Viewing the Certificate Lifetime
+
+5.11.2. Modifying the Certificate Lifetime
+
+5.11.3. Summary
+
+5.12. Feature Flags
+
+5.12.1. Available Features
+
+5.12.2. REST API
+
+5.12.3. ngclient
+
+5.13. Actions
+
+5.13.1. Available Actions
+
+5.13.1.1.
+
+discover_nodes
+
+5.13.2. REST API
+
+5.14. Limitations
+
+5.14.1. Site Sync
+
+5.14.1.1. Site Sync must only be used in one direction
+
+5.14.1.2. Site Sync only considers changes within an applicable time window for synchronisation
+
+5.14.1.3. Site Sync supports Independent Filesets
+
+5.14.1.4. Destination site Independent Filesets must exist prior to synchronisation
+
+5.14.1.5. Directory deletion is not supported
+
+5.14.2. Bidirectional Site Sync
+
+5.14.2.1. Bidirectional  Site Sync implements eventual consistency
+
+5.14.2.2. Bidirectional Site Sync is only supported via schedules
+
+5.14.2.3. Bidirectional synchronisation is sequential
+
+5.14.2.4. Swapping files / Last write wins
+
+5.14.2.5. Renaming or deleting files and directories causes re-sending of data
+
+5.14.2.6. Renaming or files and directories on both bidirectional Site Sync sites causes duplication of data
+
+5.14.2.7. Creation or deletion of empty directories on site 1 does not synchronise to site 2
+
+6. Troubleshooting
+
+6.1. Service Status
+
+6.2. Service Logs
+
+6.3. Specific Features
+
+6.3.1. Site Sync
+
+6.3.1.1. Snapshot Rotation
+
+6.3.1.2. Manual Resolution
+
+6.3.1.3. Re-sync all
+
+6.3.1.4. Force rotate
+
+6.3.1.5. Locking Errors
+
+7. Reference
+
+7.1. Default Workflows
+
+7.1.1.
+
+migrate
+
+7.1.2.
+
+premigrate
+
+7.1.3.
+
+recall
+
+7.1.4.
+
+send
+
+7.1.5.
+
+site_sync
+
+7.1.5.1. created
+
+7.1.5.2. updated
+
+7.1.5.3. moved
+
+7.1.5.4. deleted
+
+7.1.5.5. import_to_site_hydrated
+
+7.1.5.6. import_to_site_dehydrated
+
+7.2. Hidden Workflows
+
+7.2.1. transparent_recall
+
+7.2.2. reverse_stub
+
+7.2.3. delete_file
+
+7.3. Discovery Steps
+
+7.3.1.
+
+dynamo.tasks.recursive_navigate
+
+-
+
+recursive
+
+- Function: discovery
+
+7.3.2.
+
+dynamo.tasks.recursive_action
+
+-
+
+recursive(deprecated)
+
+- Function: discovery
+
+7.3.3.
+
+dynamo.tasks.snapdiff
+
+-
+
+snapdiff
+
+- Function: discovery
+
+7.4. Workflow Steps
+
+7.4.1.
+
+dynamo.tasks.migrate
+
+- Function: Worker
+
+7.4.2.
+
+dynamo.tasks.recall
+
+- Function: Worker
+
+7.4.3.
+
+dynamo.tasks.reverse_stub
+
+- Function: Worker
+
+7.4.4.
+
+dynamo.tasks.ngenea_sync_metadata
+
+- Function: Worker
+
+7.4.5.
+
+dynamo.tasks.delete_paths_from_gpfs
+
+- Function: Worker
+
+7.4.6.
+
+dynamo.tasks.check_sync_state
+
+- Function: Worker
+
+7.4.7.
+
+dynamo.tasks.move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.8.
+
+dynamo.tasks.one_step_move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.9.
+
+dynamo.tasks.remove_location_xattrs_for_moved
+
+- Function: Worker
+
+7.4.10.
+
+dynamo.tasks.move_in_cloud
+
+- Function: Worker
+
+7.4.11.
+
+dynamo.tasks.remove_from_cloud
+
+- Function: Worker
+
+7.4.12.
+
+dynamo.tasks.ensure_cloud_file_exists
+
+- Function: Worker
+
+7.4.13.
+
+dynamo.tasks.import_files_from_external_target
+
+- Function: Worker
+
+7.4.14.
+
+dynamo.tasks.copy_files_from_external_target
+
+7.5. Automated Tasks
+
+7.5.1. Every minute
+
+7.5.1.1.
+
+alerts.tasks.fetch_alerts
+
+7.5.2. Every 30 minutes
+
+7.5.2.1.
+
+dynamocore.tasks.admin.load_storagepools
+
+7.5.2.2.
+
+dynamocore.tasks.space_site.send_check_space_site_quota
+
+7.5.3. Hourly
+
+7.5.3.1.
+
+dynamocore.tasks.jobs.update_state_as_failed_for_inactive_tasks
+
+7.5.3.2.
+
+dynamocore.tasks.jobs.invalidate_cancelled_job_tasks
+
+7.5.3.3.
+
+dynamocore.tasks.network.ensure_consistent_tc_rules
+
+7.5.3.4.
+
+dynamocore.tasks.events.cleanup_old_events
+
+7.5.3.5.
+
+dynamocore.tasks.browsing.browsing_task_clear
+
+7.5.3.6.
+
+dynamocore.tasks.system_settings.create_or_update_site_settings_auto
+
+7.5.3.7.
+
+dynamocore.tasks.system_settings.sync_global_settings_auto
+
+7.5.3.8.
+
+dynamocore.tasks.spaces.sync_spaces
+
+7.5.4. Every 12 Hours
+
+7.5.4.1.
+
+dynamocore.tasks.site.fetch_site_analytics
+
+7.5.5. Daily
+
+7.5.5.1.
+
+dynamocore.tasks.search.remove_old_search_results
+
+7.5.5.2.
+
+dynamocore.tasks.jobs.expire_old_jobs
+
+7.5.5.3.
+
+dynamocore.tasks.network.update_cloud_ips_for_s3
+
+7.5.5.4.
+
+dynamocore.tasks.network.update_cloud_ips_for_azure
+
+7.5.5.5.
+
+dynamocore.tasks.network.update_cloud_ips_for_google
+
+7.5.5.6.
+
+dynamocore.tasks.server.get_remote_servers
+
+7.5.5.7.
+
+dynamocore.tasks.jobs.expire_old_fsobjects
+
+7.5.5.8.
+
+dynamocore.tasks.refresh.delete_removed_queues
+
+7.6. Job States
+
+7.7. Task States
+
+7.8. File States
+
+7.8.1. Processed
+
+7.8.2. Skipped
+
+7.8.3. Failed
+
+7.8.4. Aborted
+
+7.9. API
+
+8. Tools
+
+8.1.
+
+ngclient
+
+8.1.1. NGCLIENT
+
+8.1.1.1. SYNOPSIS
+
+8.1.1.2. DESCRIPTION
+
+8.1.1.3. OPTION SUMMARY
+
+8.1.1.3.1. OPTIONS
+
+8.1.1.4. EXAMPLES
+
+8.1.1.4.1. GENERATE A CLIENT KEY
+
+8.1.1.4.2. RECALL A FILE
+
+8.1.1.4.3. PREMIGRATE A DIRECTORY RECURSIVELY
+
+8.1.1.4.4. SEND A FILE TO A REMOTE SITE
+
+8.1.1.5. AVAILABILITY
+
+8.1.1.6. SEE ALSO
+
+8.1.1.7. LICENSE
+
+8.2.
+
+ngclient-workflows
+
+8.2.1. NGCLIENT-WORKFLOWS
+
+8.2.1.1. SYNOPSIS
+
+8.2.1.2. DESCRIPTION
+
+8.2.1.3. OPTION SUMMARY
+
+8.2.1.3.1. OPTIONS
+
+8.2.1.4. EXAMPLES
+
+8.2.1.4.1. GENERATE A CLIENT KEY
+
+8.2.1.4.2. GET AN EXISTING WORKFLOW
+
+8.2.1.4.3. LIST ALL EXISTING WORKFLOWS IN YAML FORMAT
+
+8.2.1.4.4. IMPORT A CUSTOM WORKFLOW
+
+8.2.1.4.5. RENAME A WORKFLOW
+
+8.2.1.4.6. DELETE A WORKFLOW
+
+8.2.1.5. AVAILABILITY
+
+8.2.1.6. SEE ALSO
+
+8.2.1.7. LICENSE
+
+8.3.
+
+ngclient-features
+
+8.3.1. NGCLIENT-FEATURES
+
+8.3.1.1. SYNOPSIS
+
+8.3.1.2. DESCRIPTION
+
+8.3.1.3. OPTION SUMMARY
+
+8.3.1.3.1. OPTIONS
+
+8.3.1.4. EXAMPLES
+
+8.3.1.4.1. LIST AVAILABLE FEATURES
+
+8.3.1.4.2. ENABLE A FEATURE
+
+8.3.1.4.3. DISABLE A FEATURE
+
+8.3.1.5. AVAILABILITY
+
+8.3.1.6. SEE ALSO
+
+8.3.1.7. LICENSE
+
+8.4.
+
+ngclient-settings
+
+8.4.1. NGCLIENT-SETTINGS
+
+8.4.1.1. SYNOPSIS
+
+8.4.1.2. DESCRIPTION
+
+8.4.1.3. OPTION SUMMARY
+
+8.4.1.3.1. OPTIONS
+
+8.4.1.4. EXAMPLES
+
+8.4.1.4.1. REFRESH SETTINGS ON ONE SITE
+
+8.4.1.4.2. REFRESH SETTINGS ON ALL SITES
+
+8.4.1.5. AVAILABILITY
+
+8.4.1.6. SEE ALSO
+
+8.4.1.7. LICENSE
+
+8.5.
+
+ngclient-sites
+
+8.5.1. NGCLIENT-SITES
+
+8.5.1.1. SYNOPSIS
+
+8.5.1.2. DESCRIPTION
+
+8.5.1.3. OPTION SUMMARY
+
+8.5.1.3.1. OPTIONS
+
+8.5.1.4. EXAMPLES
+
+8.5.1.4.1. REFRESH METADATA ON ONE SITE
+
+8.5.1.4.2. REFRESH METADATA ON ALL SITES
+
+8.5.1.5. AVAILABILITY
+
+8.5.1.6. SEE ALSO
+
+8.5.1.7. LICENSE
+
+8.6.
+
+ngenea-client.conf
+
+8.6.1. NGENEACLIENTCONF
+
+8.6.1.1. SYNOPSIS
+
+8.6.1.2. FILE FORMAT
+
+8.6.1.3. PARAMETERS
+
+8.6.1.4. EXAMPLE
+
+8.6.1.5. SEE ALSO
+
+8.6.1.6. LICENSE
+
+8.7.
+
+transparent_recall
+
+8.7.1. TRANSPARENT_RECALL
+
+8.7.1.1. SYNOPSIS
+
+8.7.1.2. DESCRIPTION
+
+8.7.1.3. OPTION SUMMARY
+
+8.7.1.3.1. OPTIONS
+
+8.7.1.4. CONFIGURATION
+
+8.7.1.5. TRANSPARENT RECALL POLICY
+
+8.7.1.5.1. Adjusting the transparent recall queue
+
+8.7.1.5.2. WARNING
+
+8.7.1.6. TROUBLESHOOTING
+
+8.7.2. AVAILABILITY
+
+8.7.2.1. SEE ALSO
+
+8.7.2.2. LICENSE
+
+9. Backup
+
+9.1. Backing Up HUB Static Configurations
+
+9.1.1. Backup
+
+9.1.1.1. Command:
+
+9.1.2. Restore
+
+9.1.2.1. Command:
+
+--------------------------------------------------------------------------------
+
+# Administration Guide — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/index.html#admin_guide/index
+
+Administration Guide — Ngenea Hub
+
+Skip to content
+
+Administration Guide
+
+Â¶
+
+Ngenea Hub harnesses the power of
+
+Ngenea
+
+to provide global workflows, enabling your data to be where you need it, when you need it.
+
+1. Installation
+
+2. Upgrade
+
+2.1. Before you start
+
+2.2. Backup Workflows
+
+2.3. Stop Services
+
+2.4. Upgrade Packages
+
+2.5. Upgrade Configurations
+
+2.6. Restart Services
+
+2.7. Validation
+
+2.8. Restoring Workflows
+
+3. Configuration
+
+3.1. Hub Initial Configuration
+
+3.2. Hub Configuration
+
+3.2.1. Settings
+
+3.2.1.1. Mandatory Settings
+
+3.2.1.2. Optional settings
+
+3.2.2. Enabling LDAP/Active Directory Authentication
+
+3.2.3. Broker Settings
+
+3.2.4. Server Configurations
+
+3.2.5. Docker Compose configuration
+
+3.3. Worker Configuration
+
+3.3.1. Controlling Functions
+
+3.3.2. Custom Queues
+
+3.3.3. Passing Custom Config File to Ngenea Worker
+
+3.3.3.1. To Run ngenea-worker with multiple sites
+
+3.3.4. Setting Ngenea Worker debug level in systemd service script
+
+3.4. Hub Messaging Queue Configuration
+
+3.4.1. Selecting Messaging Queue
+
+3.4.2. Redis Setting Files
+
+3.4.3. RabbitMQ Setting Files
+
+3.4.4. Admin Interface
+
+3.4.5. Limitations
+
+4. Feature Set-up
+
+4.1. Search
+
+4.1.1. Prerequisites
+
+4.1.2. Configuration
+
+4.1.2.1. Search Backend
+
+4.1.2.2. Elasticsearch URL
+
+4.1.3. Search UI
+
+4.2. Cloud Functions
+
+4.2.1. GCP Cloud Function
+
+4.2.2. AWS Lambda Function
+
+4.2.2.1. Create the IAM policy and role
+
+4.2.2.2. Create the Lambda function
+
+4.2.3. Configuration
+
+4.2.3.1. version
+
+4.2.3.2. hub_access
+
+4.2.3.3. sites
+
+4.2.3.4. actions
+
+4.2.3.5. optional
+
+4.2.3.6. vendor
+
+4.2.3.7. vendors
+
+4.2.3.8. Complete Example
+
+4.3. Ngenea Worker Plugins
+
+4.3.1. Creating your plugin
+
+4.3.1.1. Example plugin creation
+
+4.3.1.2. External Dependencies
+
+4.3.1.3. Installing custom plugins
+
+4.3.2. Managing plugins
+
+4.3.2.1. Enabling your plugin
+
+4.3.2.2. Installing your plugin
+
+4.3.2.3. Uninstalling your plugin
+
+4.3.3. Custom Tasks
+
+4.3.3.1. The Structure of a Task
+
+4.3.3.1.1. Arguments
+
+4.3.3.1.2. Return Payload
+
+4.3.3.2. Support for Streaming Paths from API
+
+4.3.3.3. Queues
+
+4.3.4. Example Plugins
+
+4.3.4.1. Email notification task
+
+4.3.4.2. Running additional script
+
+4.3.5. SubDAG Helpers
+
+4.4. Disaster Recovery / Cold Failover
+
+4.4.1. Setup
+
+4.4.1.1. Configure datastore
+
+4.4.1.2. Configure Networking
+
+4.4.1.3. Install Ngenea Hub
+
+4.4.2. Performing failover
+
+4.4.3. Migration from local datastore
+
+4.5. External SSL
+
+4.5.1. Installing NGINX
+
+4.5.2. Configuration for SSL Termination and Reverse Proxy using OpenSSL
+
+4.5.2.1. Create Self-Signed Certificates for Nginx
+
+4.5.2.2. Creating configuration file for Nginx
+
+4.5.3. Configuration for SSL Termination and Reverse Proxy using Certbot and LetsEncrypt (Another method)
+
+4.5.3.1. Add trusted SSL Certificates from Letsencrypt
+
+4.5.4. HTTPS Configuration for NgeneaHub
+
+4.5.4.1. Reload the Nginx service after you have made some configuration changes
+
+4.5.4.2. To auto-renew the certificates, Run
+
+4.6. LDAP / Active Directory Login
+
+4.6.1. Configuration
+
+4.6.1.1. Example Configurations
+
+4.6.2. Managing users and groups from AD in HUB
+
+4.7. Queues
+
+4.7.1. Configuration
+
+4.7.2. Functions
+
+4.7.2.1. Disabling Functions
+
+4.7.3. Queue discovery
+
+4.7.4. Memory considerations
+
+4.7.5. Workflows
+
+5. Usage
+
+5.1. Web Interface
+
+5.1.1. Authentication
+
+5.1.1.1. Login
+
+5.1.1.2. Logout
+
+5.1.2. Browser
+
+5.1.2.1. Recent Jobs
+
+5.1.2.2. Search
+
+5.1.2.2.1. Managing the search filters from the dialog
+
+5.1.2.2.2. Submitting the search and viewing search results
+
+5.1.2.2.3. Advanced usage: Managing the search filters from the search bar
+
+5.1.2.3. Browse Directories
+
+5.1.2.3.1. Migrate
+
+5.1.2.3.2. Premigrate
+
+5.1.2.3.3. Recall
+
+5.1.2.3.4. Send
+
+5.1.3. Jobs
+
+5.1.3.1. Pagination
+
+5.1.3.2. Apply Filter
+
+5.1.3.3. Job ID
+
+5.1.3.4. Owner
+
+5.1.4. Administration
+
+5.1.4.1. Sites
+
+5.1.4.1.1. Add Site
+
+5.1.4.1.2. Delete Site
+
+5.1.4.2. Users
+
+5.1.4.2.1. Add User
+
+5.1.4.2.2. Activate User
+
+5.1.4.2.3. Deactivate User
+
+5.1.4.3. File Status Types
+
+5.2. API
+
+5.2.1. Reference
+
+5.2.2. Authentication
+
+5.2.2.1. JWT Authentication
+
+5.2.2.2. Client Keys
+
+5.2.2.2.1. Creating Client Keys
+
+5.2.2.2.2. Using Client Keys
+
+5.2.3. Submitting Workflow
+
+5.2.3.1. Migrate
+
+5.2.4. Trailing Slashes
+
+5.3. Monitoring and Management
+
+5.3.1. systemd service
+
+5.3.2. ngeneahubctl cli tool
+
+5.3.3. Docker containers
+
+5.3.4. Hub Task Metrics
+
+5.3.5. Health endpoints
+
+5.3.5.1. }
+
+5.3.5.2. }
+
+5.4. Custom Workflows
+
+5.4.1. Defining workflows
+
+5.4.1.1. Filter Rules
+
+5.4.1.2. Runtime fields
+
+5.4.2. Running Workflows
+
+5.4.2.1. Discovery Steps
+
+5.4.2.1.1. Discovery Options
+
+5.4.3. Includes and Excludes
+
+5.5. Jobs
+
+5.5.1. Housekeeping
+
+5.6. Site Sync
+
+5.6.1. Schedule
+
+5.6.2. Workflow
+
+5.6.3. Additional Options
+
+5.6.4. Troubleshooting
+
+5.7. Bidirectional Site Sync
+
+5.7.1. Schedule
+
+5.7.2. Workflow
+
+5.7.3. Troubleshooting
+
+5.8. Search
+
+5.8.1. Submitting a query
+
+5.8.1.1. Filters
+
+5.8.2. Retrieving results
+
+5.8.2.1. Proxies
+
+5.8.2.2. Parameters
+
+5.8.2.3. Merged results
+
+5.8.2.4. Results grouped by name
+
+5.8.3. Max Results
+
+5.8.4. Housekeeping
+
+5.9. Controlling Bandwidth Usage
+
+5.9.1. Enabling the bandwidth feature in the UI
+
+5.9.2. Checking Node status
+
+5.9.3. Registering Datastores
+
+5.9.3.1. Cloud IPAddresses
+
+5.9.3.2. Using manual IP addresses
+
+5.9.4. Linking a Datastore to a Site
+
+5.9.5. Applying the bandwidth
+
+5.10. Configuration
+
+5.10.1. Global Configurations
+
+5.10.1.1. Available Settings
+
+5.10.1.2. REST API
+
+5.10.1.3. Settings Migration
+
+5.10.2. Site-specific Configurations
+
+5.10.2.1. Available Settings
+
+5.10.2.1.1. File Batching
+
+5.10.2.1.2. Dynamic File Batching
+
+5.10.2.2. REST API
+
+5.11. Certificate Lifetime
+
+5.11.1. Viewing the Certificate Lifetime
+
+5.11.2. Modifying the Certificate Lifetime
+
+5.11.3. Summary
+
+5.12. Feature Flags
+
+5.12.1. Available Features
+
+5.12.2. REST API
+
+5.12.3. ngclient
+
+5.13. Actions
+
+5.13.1. Available Actions
+
+5.13.1.1.
+
+discover_nodes
+
+5.13.2. REST API
+
+5.14. Limitations
+
+5.14.1. Site Sync
+
+5.14.1.1. Site Sync must only be used in one direction
+
+5.14.1.2. Site Sync only considers changes within an applicable time window for synchronisation
+
+5.14.1.3. Site Sync supports Independent Filesets
+
+5.14.1.4. Destination site Independent Filesets must exist prior to synchronisation
+
+5.14.1.5. Directory deletion is not supported
+
+5.14.2. Bidirectional Site Sync
+
+5.14.2.1. Bidirectional  Site Sync implements eventual consistency
+
+5.14.2.2. Bidirectional Site Sync is only supported via schedules
+
+5.14.2.3. Bidirectional synchronisation is sequential
+
+5.14.2.4. Swapping files / Last write wins
+
+5.14.2.5. Renaming or deleting files and directories causes re-sending of data
+
+5.14.2.6. Renaming or files and directories on both bidirectional Site Sync sites causes duplication of data
+
+5.14.2.7. Creation or deletion of empty directories on site 1 does not synchronise to site 2
+
+6. Troubleshooting
+
+6.1. Service Status
+
+6.2. Service Logs
+
+6.3. Specific Features
+
+6.3.1. Site Sync
+
+6.3.1.1. Snapshot Rotation
+
+6.3.1.2. Manual Resolution
+
+6.3.1.3. Re-sync all
+
+6.3.1.4. Force rotate
+
+6.3.1.5. Locking Errors
+
+7. Reference
+
+7.1. Default Workflows
+
+7.1.1.
+
+migrate
+
+7.1.2.
+
+premigrate
+
+7.1.3.
+
+recall
+
+7.1.4.
+
+send
+
+7.1.5.
+
+site_sync
+
+7.1.5.1. created
+
+7.1.5.2. updated
+
+7.1.5.3. moved
+
+7.1.5.4. deleted
+
+7.1.5.5. import_to_site_hydrated
+
+7.1.5.6. import_to_site_dehydrated
+
+7.2. Hidden Workflows
+
+7.2.1. transparent_recall
+
+7.2.2. reverse_stub
+
+7.2.3. delete_file
+
+7.3. Discovery Steps
+
+7.3.1.
+
+dynamo.tasks.recursive_navigate
+
+-
+
+recursive
+
+- Function: discovery
+
+7.3.2.
+
+dynamo.tasks.recursive_action
+
+-
+
+recursive(deprecated)
+
+- Function: discovery
+
+7.3.3.
+
+dynamo.tasks.snapdiff
+
+-
+
+snapdiff
+
+- Function: discovery
+
+7.4. Workflow Steps
+
+7.4.1.
+
+dynamo.tasks.migrate
+
+- Function: Worker
+
+7.4.2.
+
+dynamo.tasks.recall
+
+- Function: Worker
+
+7.4.3.
+
+dynamo.tasks.reverse_stub
+
+- Function: Worker
+
+7.4.4.
+
+dynamo.tasks.ngenea_sync_metadata
+
+- Function: Worker
+
+7.4.5.
+
+dynamo.tasks.delete_paths_from_gpfs
+
+- Function: Worker
+
+7.4.6.
+
+dynamo.tasks.check_sync_state
+
+- Function: Worker
+
+7.4.7.
+
+dynamo.tasks.move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.8.
+
+dynamo.tasks.one_step_move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.9.
+
+dynamo.tasks.remove_location_xattrs_for_moved
+
+- Function: Worker
+
+7.4.10.
+
+dynamo.tasks.move_in_cloud
+
+- Function: Worker
+
+7.4.11.
+
+dynamo.tasks.remove_from_cloud
+
+- Function: Worker
+
+7.4.12.
+
+dynamo.tasks.ensure_cloud_file_exists
+
+- Function: Worker
+
+7.4.13.
+
+dynamo.tasks.import_files_from_external_target
+
+- Function: Worker
+
+7.4.14.
+
+dynamo.tasks.copy_files_from_external_target
+
+7.5. Automated Tasks
+
+7.5.1. Every minute
+
+7.5.1.1.
+
+alerts.tasks.fetch_alerts
+
+7.5.2. Every 30 minutes
+
+7.5.2.1.
+
+dynamocore.tasks.admin.load_storagepools
+
+7.5.2.2.
+
+dynamocore.tasks.space_site.send_check_space_site_quota
+
+7.5.3. Hourly
+
+7.5.3.1.
+
+dynamocore.tasks.jobs.update_state_as_failed_for_inactive_tasks
+
+7.5.3.2.
+
+dynamocore.tasks.jobs.invalidate_cancelled_job_tasks
+
+7.5.3.3.
+
+dynamocore.tasks.network.ensure_consistent_tc_rules
+
+7.5.3.4.
+
+dynamocore.tasks.events.cleanup_old_events
+
+7.5.3.5.
+
+dynamocore.tasks.browsing.browsing_task_clear
+
+7.5.3.6.
+
+dynamocore.tasks.system_settings.create_or_update_site_settings_auto
+
+7.5.3.7.
+
+dynamocore.tasks.system_settings.sync_global_settings_auto
+
+7.5.3.8.
+
+dynamocore.tasks.spaces.sync_spaces
+
+7.5.4. Every 12 Hours
+
+7.5.4.1.
+
+dynamocore.tasks.site.fetch_site_analytics
+
+7.5.5. Daily
+
+7.5.5.1.
+
+dynamocore.tasks.search.remove_old_search_results
+
+7.5.5.2.
+
+dynamocore.tasks.jobs.expire_old_jobs
+
+7.5.5.3.
+
+dynamocore.tasks.network.update_cloud_ips_for_s3
+
+7.5.5.4.
+
+dynamocore.tasks.network.update_cloud_ips_for_azure
+
+7.5.5.5.
+
+dynamocore.tasks.network.update_cloud_ips_for_google
+
+7.5.5.6.
+
+dynamocore.tasks.server.get_remote_servers
+
+7.5.5.7.
+
+dynamocore.tasks.jobs.expire_old_fsobjects
+
+7.5.5.8.
+
+dynamocore.tasks.refresh.delete_removed_queues
+
+7.6. Job States
+
+7.7. Task States
+
+7.8. File States
+
+7.8.1. Processed
+
+7.8.2. Skipped
+
+7.8.3. Failed
+
+7.8.4. Aborted
+
+7.9. API
+
+8. Tools
+
+8.1.
+
+ngclient
+
+8.1.1. NGCLIENT
+
+8.1.1.1. SYNOPSIS
+
+8.1.1.2. DESCRIPTION
+
+8.1.1.3. OPTION SUMMARY
+
+8.1.1.3.1. OPTIONS
+
+8.1.1.4. EXAMPLES
+
+8.1.1.4.1. GENERATE A CLIENT KEY
+
+8.1.1.4.2. RECALL A FILE
+
+8.1.1.4.3. PREMIGRATE A DIRECTORY RECURSIVELY
+
+8.1.1.4.4. SEND A FILE TO A REMOTE SITE
+
+8.1.1.5. AVAILABILITY
+
+8.1.1.6. SEE ALSO
+
+8.1.1.7. LICENSE
+
+8.2.
+
+ngclient-workflows
+
+8.2.1. NGCLIENT-WORKFLOWS
+
+8.2.1.1. SYNOPSIS
+
+8.2.1.2. DESCRIPTION
+
+8.2.1.3. OPTION SUMMARY
+
+8.2.1.3.1. OPTIONS
+
+8.2.1.4. EXAMPLES
+
+8.2.1.4.1. GENERATE A CLIENT KEY
+
+8.2.1.4.2. GET AN EXISTING WORKFLOW
+
+8.2.1.4.3. LIST ALL EXISTING WORKFLOWS IN YAML FORMAT
+
+8.2.1.4.4. IMPORT A CUSTOM WORKFLOW
+
+8.2.1.4.5. RENAME A WORKFLOW
+
+8.2.1.4.6. DELETE A WORKFLOW
+
+8.2.1.5. AVAILABILITY
+
+8.2.1.6. SEE ALSO
+
+8.2.1.7. LICENSE
+
+8.3.
+
+ngclient-features
+
+8.3.1. NGCLIENT-FEATURES
+
+8.3.1.1. SYNOPSIS
+
+8.3.1.2. DESCRIPTION
+
+8.3.1.3. OPTION SUMMARY
+
+8.3.1.3.1. OPTIONS
+
+8.3.1.4. EXAMPLES
+
+8.3.1.4.1. LIST AVAILABLE FEATURES
+
+8.3.1.4.2. ENABLE A FEATURE
+
+8.3.1.4.3. DISABLE A FEATURE
+
+8.3.1.5. AVAILABILITY
+
+8.3.1.6. SEE ALSO
+
+8.3.1.7. LICENSE
+
+8.4.
+
+ngclient-settings
+
+8.4.1. NGCLIENT-SETTINGS
+
+8.4.1.1. SYNOPSIS
+
+8.4.1.2. DESCRIPTION
+
+8.4.1.3. OPTION SUMMARY
+
+8.4.1.3.1. OPTIONS
+
+8.4.1.4. EXAMPLES
+
+8.4.1.4.1. REFRESH SETTINGS ON ONE SITE
+
+8.4.1.4.2. REFRESH SETTINGS ON ALL SITES
+
+8.4.1.5. AVAILABILITY
+
+8.4.1.6. SEE ALSO
+
+8.4.1.7. LICENSE
+
+8.5.
+
+ngclient-sites
+
+8.5.1. NGCLIENT-SITES
+
+8.5.1.1. SYNOPSIS
+
+8.5.1.2. DESCRIPTION
+
+8.5.1.3. OPTION SUMMARY
+
+8.5.1.3.1. OPTIONS
+
+8.5.1.4. EXAMPLES
+
+8.5.1.4.1. REFRESH METADATA ON ONE SITE
+
+8.5.1.4.2. REFRESH METADATA ON ALL SITES
+
+8.5.1.5. AVAILABILITY
+
+8.5.1.6. SEE ALSO
+
+8.5.1.7. LICENSE
+
+8.6.
+
+ngenea-client.conf
+
+8.6.1. NGENEACLIENTCONF
+
+8.6.1.1. SYNOPSIS
+
+8.6.1.2. FILE FORMAT
+
+8.6.1.3. PARAMETERS
+
+8.6.1.4. EXAMPLE
+
+8.6.1.5. SEE ALSO
+
+8.6.1.6. LICENSE
+
+8.7.
+
+transparent_recall
+
+8.7.1. TRANSPARENT_RECALL
+
+8.7.1.1. SYNOPSIS
+
+8.7.1.2. DESCRIPTION
+
+8.7.1.3. OPTION SUMMARY
+
+8.7.1.3.1. OPTIONS
+
+8.7.1.4. CONFIGURATION
+
+8.7.1.5. TRANSPARENT RECALL POLICY
+
+8.7.1.5.1. Adjusting the transparent recall queue
+
+8.7.1.5.2. WARNING
+
+8.7.1.6. TROUBLESHOOTING
+
+8.7.2. AVAILABILITY
+
+8.7.2.1. SEE ALSO
+
+8.7.2.2. LICENSE
+
+9. Backup
+
+9.1. Backing Up HUB Static Configurations
+
+9.1.1. Backup
+
+9.1.1.1. Command:
+
+9.1.2. Restore
+
+9.1.2.1. Command:
+
+--------------------------------------------------------------------------------
+
+# 1. Installation — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/installation/index.html
+
+1. Installation — Ngenea Hub
+
+Skip to content
+
+1.
+
+Installation
+
+Â¶
+
+Notice
+
+Hub versions 1.18+ have additional requirements
+
+If an upgrade is being performed from a version < 1.18 please note changes in the Installation and Upgrade guides
+
+A deployment of Ngenea Hub comprises two main components:
+
+Ngenea Hub
+
+- the central management point, from which all tasks are managed
+
+Ngenea Worker
+
+- worker agents, installed on individual Ngenea servers, that execute the Ngenea tasks
+
+Ngenea Worker
+
+are installed on one or more nodes in a
+
+Site
+
+, which typically represents a single Ngenea cluster
+
+or location.
+
+Ngenea Hub
+
+needs to be accessible from all
+
+Ngenea Workers
+
+on the following ports:
+
+6379/tcp
+
+5672/tcp
+
+8000/tcp
+
+8000/tcp
+
+is required for Hub versions >= 1.18
+
+Once installed, additional features such as Search may be set up as described in
+
+Feature Set-up
+
+Ngenea Hub
+
+software must align with Ngenea software.  Ensure to review the
+
+Product Interoperability Matrix
+
+and align software versions accordingly.
+
+--------------------------------------------------------------------------------
+
+# 2. Upgrade — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/upgrade/index.html
+
+2. Upgrade — Ngenea Hub
+
+Skip to content
+
+2.
+
+Upgrade
+
+Â¶
+
+Note
+
+Hub versions 1.18+ have additional requirements
+
+If an upgrade is being performed from a version < 1.18 please note changes in the Installation and Upgrade guides
+
+Ensure to review the
+
+Product Interoperability Matrix
+
+and align software versions accordingly.
+
+Note
+
+Hub versions 2.3+ have additional requirements
+
+If an upgrade is being performed from a version < 2.30 please note changes in the Installation and Upgrade guides
+
+Prior LDAP connections require to be re-authenticated, or preferably via Kerberos.  Ensure to review the
+
+LDAP / Active Directory Login
+
+LDAP and Kerberos sections applying the preferred setup accordingly.
+
+2.1.
+
+Before you start
+
+Â¶
+
+Before upgrading, you must wait for any pending or active jobs to complete, otherwise they may be lost or present an incorrect future state.
+
+Scheduled workflows must be temporarily disabled prior to upgrading to prevent new jobs being submitted during the upgrade process.
+
+2.2.
+
+Backup Workflows
+
+Â¶
+
+Ngenea Hub ships with some default workflows. New releases may make changes to these workflows, so any customisations to them may be lost during upgrade. For safety, workflows should be backed-up before upgrading.
+
+The easiest way to backup workflows is using
+
+ngclient
+
+or by using Ngenea Hub backup management command
+
+Backing Up HUB Static Configurations
+
+ngclient
+
+workflows
+
+list
+
+>
+
+workflows_backup.json
+
+See
+
+NGCLIENT-WORKFLOWS
+
+for more information.
+
+2.3.
+
+Stop Services
+
+Â¶
+
+Note
+
+Hub versions 2.1+ have additional requirements
+
+When upgrading Hub 2.1+, the additional service ngenea-worker-frontend.path is required to be actioned
+
+First, shutdown Ngenea Worker on all nodes
+
+systemctl
+
+stop
+
+ngenea-worker
+
+Note that any Ngenea Worker packages pre-1.12.0 will use the older syntax:
+
+systemctl
+
+stop
+
+ngenea-worker@SITENAME
+
+Then shutdown Ngenea Hub
+
+systemctl
+
+stop
+
+ngeneahub
+
+systemctl
+
+stop
+
+ngeneahub-frontend.path
+
+Warning
+
+Not stopping the workers before upgrading may result in jobs being stuck as
+
+PENDING
+
+.
+
+If this happens, restarting the workers using
+
+systemctl
+
+restart
+
+ngenea-worker
+
+will allow jobs to start running again.
+
+2.4.
+
+Upgrade Packages
+
+Â¶
+
+Download the latest RPMs from the Download page.
+
+Upgrade Ngenea Hub
+
+yum
+
+upgrade
+
+ngenea-hub-<version>.rpm
+
+As with
+
+Installation
+
+, for offline situations, the Ngenea Hub base and image rpms can be upgraded with
+
+rpm
+
+-Uvh
+
+ngenea-hub-<version>.rpm
+
+ngenea-hub-images-<version>.rpm
+
+Upgrade Ngenea Worker on all nodes
+
+yum
+
+upgrade
+
+ngenea-worker-<version>.rpm
+
+2.5.
+
+Upgrade Configurations
+
+Â¶
+
+Warning
+
+If upgrading from Ngenea Hub version 1.17 or older, you must convert worker configuration to 1.18+ format.
+
+Please refer to the
+
+appropriate worker configuration
+
+and
+
+worker join
+
+steps as described in
+
+Ngenea Worker
+
+.
+
+Installation of the worker is not required as this has been achieved in the prior Upgrade Packages step.
+
+Ngenea Hub versions 2.3+ have additional requirements.
+
+If an upgrade is being performed from a version < 2.30 please note changes in the Installation and Upgrade guides
+
+Prior LDAP connections require to be re-authenticated, or preferably via Kerberos.  Ensure to review the
+
+LDAP / Active Directory Login
+
+LDAP and Kerberos sections applying the preferred setup accordingly.
+
+2.6.
+
+Restart Services
+
+Â¶
+
+First, startup Ngenea Hub
+
+systemctl
+
+start
+
+ngeneahub
+
+systemctl
+
+start
+
+ngeneahub-frontend.path
+
+Then start Ngenea Worker on all nodes
+
+systemctl
+
+start
+
+ngenea-worker
+
+If any scheduled workflows were disabled, they can now safely be re-enabled.
+
+2.7.
+
+Validation
+
+Â¶
+
+Check the status of the Ngenea Hub service with:
+
+ngeneahubctl
+
+status
+
+systemctl
+
+status
+
+ngeneahub-frontend.path
+
+Check the status of Ngenea Worker service with
+
+systemctl
+
+status
+
+ngenea-worker
+
+2.8.
+
+Restoring Workflows
+
+Â¶
+
+Check the workflows post-update. If there are any issue or inconsistencies with the upgraded workflows, they can be restored from the backup created pre-upgrade. This is also done using
+
+ngclient
+
+.
+
+Any workflow which is missing can be re-imported using
+
+ngclient
+
+workflows
+
+import
+
+<workflow_file>
+
+Any workflow which has changed can be restored using
+
+ngclient
+
+workflows
+
+update
+
+<id>
+
+<workflow_file>
+
+Note,
+
+ngclient
+
+only allows importing or updating single workflows at a time. The
+
+workflow_file
+
+passed to the above commands must only contain a single workflow definition.
+
+--------------------------------------------------------------------------------
+
+# 3. Configuration — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/configuration/index.html
+
+3. Configuration — Ngenea Hub
+
+Skip to content
+
+3.
+
+Configuration
+
+Â¶
+
+3.1. Hub Initial Configuration
+
+3.2. Hub Configuration
+
+3.2.1. Settings
+
+3.2.1.1. Mandatory Settings
+
+3.2.1.2. Optional settings
+
+3.2.2. Enabling LDAP/Active Directory Authentication
+
+3.2.3. Broker Settings
+
+3.2.4. Server Configurations
+
+3.2.5. Docker Compose configuration
+
+3.3. Worker Configuration
+
+3.3.1. Controlling Functions
+
+3.3.2. Custom Queues
+
+3.3.3. Passing Custom Config File to Ngenea Worker
+
+3.3.3.1. To Run ngenea-worker with multiple sites
+
+3.3.4. Setting Ngenea Worker debug level in systemd service script
+
+3.4. Hub Messaging Queue Configuration
+
+3.4.1. Selecting Messaging Queue
+
+3.4.2. Redis Setting Files
+
+3.4.3. RabbitMQ Setting Files
+
+3.4.4. Admin Interface
+
+3.4.5. Limitations
+
+--------------------------------------------------------------------------------
+
+# 4. Feature Set-up — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/features/index.html
+
+4. Feature Set-up — Ngenea Hub
+
+Skip to content
+
+4.
+
+Feature Set-up
+
+Â¶
+
+To use certain features in Ngenea Hub, additional set-up is required as described in this section.
+
+4.1. Search
+
+4.1.1. Prerequisites
+
+4.1.2. Configuration
+
+4.1.2.1. Search Backend
+
+4.1.2.2. Elasticsearch URL
+
+4.1.3. Search UI
+
+4.2. Cloud Functions
+
+4.2.1. GCP Cloud Function
+
+4.2.2. AWS Lambda Function
+
+4.2.2.1. Create the IAM policy and role
+
+4.2.2.2. Create the Lambda function
+
+4.2.3. Configuration
+
+4.2.3.1. version
+
+4.2.3.2. hub_access
+
+4.2.3.3. sites
+
+4.2.3.4. actions
+
+4.2.3.5. optional
+
+4.2.3.6. vendor
+
+4.2.3.7. vendors
+
+4.2.3.8. Complete Example
+
+4.3. Ngenea Worker Plugins
+
+4.3.1. Creating your plugin
+
+4.3.1.1. Example plugin creation
+
+4.3.1.2. External Dependencies
+
+4.3.1.3. Installing custom plugins
+
+4.3.2. Managing plugins
+
+4.3.2.1. Enabling your plugin
+
+4.3.2.2. Installing your plugin
+
+4.3.2.3. Uninstalling your plugin
+
+4.3.3. Custom Tasks
+
+4.3.3.1. The Structure of a Task
+
+4.3.3.1.1. Arguments
+
+4.3.3.1.2. Return Payload
+
+4.3.3.2. Support for Streaming Paths from API
+
+4.3.3.3. Queues
+
+4.3.4. Example Plugins
+
+4.3.4.1. Email notification task
+
+4.3.4.2. Running additional script
+
+4.3.5. SubDAG Helpers
+
+4.4. Disaster Recovery / Cold Failover
+
+4.4.1. Setup
+
+4.4.1.1. Configure datastore
+
+4.4.1.2. Configure Networking
+
+4.4.1.3. Install Ngenea Hub
+
+4.4.2. Performing failover
+
+4.4.3. Migration from local datastore
+
+4.5. External SSL
+
+4.5.1. Installing NGINX
+
+4.5.2. Configuration for SSL Termination and Reverse Proxy using OpenSSL
+
+4.5.2.1. Create Self-Signed Certificates for Nginx
+
+4.5.2.2. Creating configuration file for Nginx
+
+4.5.3. Configuration for SSL Termination and Reverse Proxy using Certbot and LetsEncrypt (Another method)
+
+4.5.3.1. Add trusted SSL Certificates from Letsencrypt
+
+4.5.4. HTTPS Configuration for NgeneaHub
+
+4.5.4.1. Reload the Nginx service after you have made some configuration changes
+
+4.5.4.2. To auto-renew the certificates, Run
+
+4.6. LDAP / Active Directory Login
+
+4.6.1. Configuration
+
+4.6.1.1. Example Configurations
+
+4.6.2. Managing users and groups from AD in HUB
+
+4.7. Queues
+
+4.7.1. Configuration
+
+4.7.2. Functions
+
+4.7.2.1. Disabling Functions
+
+4.7.3. Queue discovery
+
+4.7.4. Memory considerations
+
+4.7.5. Workflows
+
+--------------------------------------------------------------------------------
+
+# 5. Usage — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/usage/index.html
+
+5. Usage — Ngenea Hub
+
+Skip to content
+
+5.
+
+Usage
+
+Â¶
+
+5.1. Web Interface
+
+5.1.1. Authentication
+
+5.1.1.1. Login
+
+5.1.1.2. Logout
+
+5.1.2. Browser
+
+5.1.2.1. Recent Jobs
+
+5.1.2.2. Search
+
+5.1.2.2.1. Managing the search filters from the dialog
+
+5.1.2.2.2. Submitting the search and viewing search results
+
+5.1.2.2.3. Advanced usage: Managing the search filters from the search bar
+
+5.1.2.3. Browse Directories
+
+5.1.2.3.1. Migrate
+
+5.1.2.3.2. Premigrate
+
+5.1.2.3.3. Recall
+
+5.1.2.3.4. Send
+
+5.1.3. Jobs
+
+5.1.3.1. Pagination
+
+5.1.3.2. Apply Filter
+
+5.1.3.3. Job ID
+
+5.1.3.4. Owner
+
+5.1.4. Administration
+
+5.1.4.1. Sites
+
+5.1.4.1.1. Add Site
+
+5.1.4.1.2. Delete Site
+
+5.1.4.2. Users
+
+5.1.4.2.1. Add User
+
+5.1.4.2.2. Activate User
+
+5.1.4.2.3. Deactivate User
+
+5.1.4.3. File Status Types
+
+5.2. API
+
+5.2.1. Reference
+
+5.2.2. Authentication
+
+5.2.2.1. JWT Authentication
+
+5.2.2.2. Client Keys
+
+5.2.2.2.1. Creating Client Keys
+
+5.2.2.2.2. Using Client Keys
+
+5.2.3. Submitting Workflow
+
+5.2.3.1. Migrate
+
+5.2.4. Trailing Slashes
+
+5.3. Monitoring and Management
+
+5.3.1. systemd service
+
+5.3.2. ngeneahubctl cli tool
+
+5.3.3. Docker containers
+
+5.3.4. Hub Task Metrics
+
+5.3.5. Health endpoints
+
+5.3.5.1. }
+
+5.3.5.2. }
+
+5.4. Custom Workflows
+
+5.4.1. Defining workflows
+
+5.4.1.1. Filter Rules
+
+5.4.1.2. Runtime fields
+
+5.4.2. Running Workflows
+
+5.4.2.1. Discovery Steps
+
+5.4.2.1.1. Discovery Options
+
+5.4.3. Includes and Excludes
+
+5.5. Jobs
+
+5.5.1. Housekeeping
+
+5.6. Site Sync
+
+5.6.1. Schedule
+
+5.6.2. Workflow
+
+5.6.3. Additional Options
+
+5.6.4. Troubleshooting
+
+5.7. Bidirectional Site Sync
+
+5.7.1. Schedule
+
+5.7.2. Workflow
+
+5.7.3. Troubleshooting
+
+5.8. Search
+
+5.8.1. Submitting a query
+
+5.8.1.1. Filters
+
+5.8.2. Retrieving results
+
+5.8.2.1. Proxies
+
+5.8.2.2. Parameters
+
+5.8.2.3. Merged results
+
+5.8.2.4. Results grouped by name
+
+5.8.3. Max Results
+
+5.8.4. Housekeeping
+
+5.9. Controlling Bandwidth Usage
+
+5.9.1. Enabling the bandwidth feature in the UI
+
+5.9.2. Checking Node status
+
+5.9.3. Registering Datastores
+
+5.9.3.1. Cloud IPAddresses
+
+5.9.3.2. Using manual IP addresses
+
+5.9.4. Linking a Datastore to a Site
+
+5.9.5. Applying the bandwidth
+
+5.10. Configuration
+
+5.10.1. Global Configurations
+
+5.10.1.1. Available Settings
+
+5.10.1.2. REST API
+
+5.10.1.3. Settings Migration
+
+5.10.2. Site-specific Configurations
+
+5.10.2.1. Available Settings
+
+5.10.2.1.1. File Batching
+
+5.10.2.1.2. Dynamic File Batching
+
+5.10.2.2. REST API
+
+5.11. Certificate Lifetime
+
+5.11.1. Viewing the Certificate Lifetime
+
+5.11.2. Modifying the Certificate Lifetime
+
+5.11.3. Summary
+
+5.12. Feature Flags
+
+5.12.1. Available Features
+
+5.12.2. REST API
+
+5.12.3. ngclient
+
+5.13. Actions
+
+5.13.1. Available Actions
+
+5.13.1.1.
+
+discover_nodes
+
+5.13.2. REST API
+
+5.14. Limitations
+
+5.14.1. Site Sync
+
+5.14.1.1. Site Sync must only be used in one direction
+
+5.14.1.2. Site Sync only considers changes within an applicable time window for synchronisation
+
+5.14.1.3. Site Sync supports Independent Filesets
+
+5.14.1.4. Destination site Independent Filesets must exist prior to synchronisation
+
+5.14.1.5. Directory deletion is not supported
+
+5.14.2. Bidirectional Site Sync
+
+5.14.2.1. Bidirectional  Site Sync implements eventual consistency
+
+5.14.2.2. Bidirectional Site Sync is only supported via schedules
+
+5.14.2.3. Bidirectional synchronisation is sequential
+
+5.14.2.4. Swapping files / Last write wins
+
+5.14.2.5. Renaming or deleting files and directories causes re-sending of data
+
+5.14.2.6. Renaming or files and directories on both bidirectional Site Sync sites causes duplication of data
+
+5.14.2.7. Creation or deletion of empty directories on site 1 does not synchronise to site 2
+
+--------------------------------------------------------------------------------
+
+# 6. Troubleshooting — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/troubleshooting/index.html
+
+6. Troubleshooting — Ngenea Hub
+
+Skip to content
+
+6.
+
+Troubleshooting
+
+Â¶
+
+This section outlines steps for troubleshooting issues with Ngenea Hub
+
+6.1.
+
+Service Status
+
+Â¶
+
+To check the status of Ngenea Hub and its individual services
+
+ngeneahubctl
+
+status
+
+To check the status of Ngenea Worker
+
+systemctl
+
+status
+
+ngenea-worker
+
+6.2.
+
+Service Logs
+
+Â¶
+
+The full logs for Ngenea Hub can be viewed with
+
+journalctl
+
+-u
+
+ngeneahub
+
+To view Ngenea Worker logs
+
+journalctl
+
+-u
+
+ngenea-worker
+
+6.3.
+
+Specific Features
+
+Â¶
+
+6.3.1. Site Sync
+
+6.3.1.1. Snapshot Rotation
+
+6.3.1.2. Manual Resolution
+
+6.3.1.3. Re-sync all
+
+6.3.1.4. Force rotate
+
+6.3.1.5. Locking Errors
+
+--------------------------------------------------------------------------------
+
+# 7. Reference — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/reference/index.html
+
+7. Reference — Ngenea Hub
+
+Skip to content
+
+7.
+
+Reference
+
+Â¶
+
+7.1. Default Workflows
+
+7.1.1.
+
+migrate
+
+7.1.2.
+
+premigrate
+
+7.1.3.
+
+recall
+
+7.1.4.
+
+send
+
+7.1.5.
+
+site_sync
+
+7.1.5.1. created
+
+7.1.5.2. updated
+
+7.1.5.3. moved
+
+7.1.5.4. deleted
+
+7.1.5.5. import_to_site_hydrated
+
+7.1.5.6. import_to_site_dehydrated
+
+7.2. Hidden Workflows
+
+7.2.1. transparent_recall
+
+7.2.2. reverse_stub
+
+7.2.3. delete_file
+
+7.3. Discovery Steps
+
+7.3.1.
+
+dynamo.tasks.recursive_navigate
+
+-
+
+recursive
+
+- Function: discovery
+
+7.3.2.
+
+dynamo.tasks.recursive_action
+
+-
+
+recursive(deprecated)
+
+- Function: discovery
+
+7.3.3.
+
+dynamo.tasks.snapdiff
+
+-
+
+snapdiff
+
+- Function: discovery
+
+7.4. Workflow Steps
+
+7.4.1.
+
+dynamo.tasks.migrate
+
+- Function: Worker
+
+7.4.2.
+
+dynamo.tasks.recall
+
+- Function: Worker
+
+7.4.3.
+
+dynamo.tasks.reverse_stub
+
+- Function: Worker
+
+7.4.4.
+
+dynamo.tasks.ngenea_sync_metadata
+
+- Function: Worker
+
+7.4.5.
+
+dynamo.tasks.delete_paths_from_gpfs
+
+- Function: Worker
+
+7.4.6.
+
+dynamo.tasks.check_sync_state
+
+- Function: Worker
+
+7.4.7.
+
+dynamo.tasks.move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.8.
+
+dynamo.tasks.one_step_move_paths_on_gpfs
+
+- Function: Worker
+
+7.4.9.
+
+dynamo.tasks.remove_location_xattrs_for_moved
+
+- Function: Worker
+
+7.4.10.
+
+dynamo.tasks.move_in_cloud
+
+- Function: Worker
+
+7.4.11.
+
+dynamo.tasks.remove_from_cloud
+
+- Function: Worker
+
+7.4.12.
+
+dynamo.tasks.ensure_cloud_file_exists
+
+- Function: Worker
+
+7.4.13.
+
+dynamo.tasks.import_files_from_external_target
+
+- Function: Worker
+
+7.4.14.
+
+dynamo.tasks.copy_files_from_external_target
+
+7.5. Automated Tasks
+
+7.5.1. Every minute
+
+7.5.1.1.
+
+alerts.tasks.fetch_alerts
+
+7.5.2. Every 30 minutes
+
+7.5.2.1.
+
+dynamocore.tasks.admin.load_storagepools
+
+7.5.2.2.
+
+dynamocore.tasks.space_site.send_check_space_site_quota
+
+7.5.3. Hourly
+
+7.5.3.1.
+
+dynamocore.tasks.jobs.update_state_as_failed_for_inactive_tasks
+
+7.5.3.2.
+
+dynamocore.tasks.jobs.invalidate_cancelled_job_tasks
+
+7.5.3.3.
+
+dynamocore.tasks.network.ensure_consistent_tc_rules
+
+7.5.3.4.
+
+dynamocore.tasks.events.cleanup_old_events
+
+7.5.3.5.
+
+dynamocore.tasks.browsing.browsing_task_clear
+
+7.5.3.6.
+
+dynamocore.tasks.system_settings.create_or_update_site_settings_auto
+
+7.5.3.7.
+
+dynamocore.tasks.system_settings.sync_global_settings_auto
+
+7.5.3.8.
+
+dynamocore.tasks.spaces.sync_spaces
+
+7.5.4. Every 12 Hours
+
+7.5.4.1.
+
+dynamocore.tasks.site.fetch_site_analytics
+
+7.5.5. Daily
+
+7.5.5.1.
+
+dynamocore.tasks.search.remove_old_search_results
+
+7.5.5.2.
+
+dynamocore.tasks.jobs.expire_old_jobs
+
+7.5.5.3.
+
+dynamocore.tasks.network.update_cloud_ips_for_s3
+
+7.5.5.4.
+
+dynamocore.tasks.network.update_cloud_ips_for_azure
+
+7.5.5.5.
+
+dynamocore.tasks.network.update_cloud_ips_for_google
+
+7.5.5.6.
+
+dynamocore.tasks.server.get_remote_servers
+
+7.5.5.7.
+
+dynamocore.tasks.jobs.expire_old_fsobjects
+
+7.5.5.8.
+
+dynamocore.tasks.refresh.delete_removed_queues
+
+7.6. Job States
+
+7.7. Task States
+
+7.8. File States
+
+7.8.1. Processed
+
+7.8.2. Skipped
+
+7.8.3. Failed
+
+7.8.4. Aborted
+
+7.9. API
+
+--------------------------------------------------------------------------------
+
+# 8. Tools — Ngenea Hub
+URL: https://docs.arcapix.com/ngeneahub/v2.5.3/admin_guide/tools/index.html
+
+8. Tools — Ngenea Hub
+
+Skip to content
+
+8.
+
+Tools
+
+Â¶
+
+The following sections document add-on tools for Ngenea Hub
+
+8.1.
+
+ngclient
+
+8.1.1. NGCLIENT
+
+8.1.1.1. SYNOPSIS
+
+8.1.1.2. DESCRIPTION
+
+8.1.1.3. OPTION SUMMARY
+
+8.1.1.3.1. OPTIONS
+
+8.1.1.4. EXAMPLES
+
+8.1.1.4.1. GENERATE A CLIENT KEY
+
+8.1.1.4.2. RECALL A FILE
+
+8.1.1.4.3. PREMIGRATE A DIRECTORY RECURSIVELY
+
+8.1.1.4.4. SEND A FILE TO A REMOTE SITE
+
+8.1.1.5. AVAILABILITY
+
+8.1.1.6. SEE ALSO
+
+8.1.1.7. LICENSE
+
+8.2.
+
+ngclient-workflows
+
+8.2.1. NGCLIENT-WORKFLOWS
+
+8.2.1.1. SYNOPSIS
+
+8.2.1.2. DESCRIPTION
+
+8.2.1.3. OPTION SUMMARY
+
+8.2.1.3.1. OPTIONS
+
+8.2.1.4. EXAMPLES
+
+8.2.1.4.1. GENERATE A CLIENT KEY
+
+8.2.1.4.2. GET AN EXISTING WORKFLOW
+
+8.2.1.4.3. LIST ALL EXISTING WORKFLOWS IN YAML FORMAT
+
+8.2.1.4.4. IMPORT A CUSTOM WORKFLOW
+
+8.2.1.4.5. RENAME A WORKFLOW
+
+8.2.1.4.6. DELETE A WORKFLOW
+
+8.2.1.5. AVAILABILITY
+
+8.2.1.6. SEE ALSO
+
+8.2.1.7. LICENSE
+
+8.3.
+
+ngclient-features
+
+8.3.1. NGCLIENT-FEATURES
+
+8.3.1.1. SYNOPSIS
+
+8.3.1.2. DESCRIPTION
+
+8.3.1.3. OPTION SUMMARY
+
+8.3.1.3.1. OPTIONS
+
+8.3.1.4. EXAMPLES
+
+8.3.1.4.1. LIST AVAILABLE FEATURES
+
+8.3.1.4.2. ENABLE A FEATURE
+
+8.3.1.4.3. DISABLE A FEATURE
+
+8.3.1.5. AVAILABILITY
+
+8.3.1.6. SEE ALSO
+
+8.3.1.7. LICENSE
+
+8.4.
+
+ngclient-settings
+
+8.4.1. NGCLIENT-SETTINGS
+
+8.4.1.1. SYNOPSIS
+
+8.4.1.2. DESCRIPTION
+
+8.4.1.3. OPTION SUMMARY
+
+8.4.1.3.1. OPTIONS
+
+8.4.1.4. EXAMPLES
+
+8.4.1.4.1. REFRESH SETTINGS ON ONE SITE
+
+8.4.1.4.2. REFRESH SETTINGS ON ALL SITES
+
+8.4.1.5. AVAILABILITY
+
+8.4.1.6. SEE ALSO
+
+8.4.1.7. LICENSE
+
+8.5.
+
+ngclient-sites
+
+8.5.1. NGCLIENT-SITES
+
+8.5.1.1. SYNOPSIS
+
+8.5.1.2. DESCRIPTION
+
+8.5.1.3. OPTION SUMMARY
+
+8.5.1.3.1. OPTIONS
+
+8.5.1.4. EXAMPLES
+
+8.5.1.4.1. REFRESH METADATA ON ONE SITE
+
+8.5.1.4.2. REFRESH METADATA ON ALL SITES
+
+8.5.1.5. AVAILABILITY
+
+8.5.1.6. SEE ALSO
+
+8.5.1.7. LICENSE
+
+8.6.
+
+ngenea-client.conf
+
+8.6.1. NGENEACLIENTCONF
+
+8.6.1.1. SYNOPSIS
+
+8.6.1.2. FILE FORMAT
+
+8.6.1.3. PARAMETERS
+
+8.6.1.4. EXAMPLE
+
+8.6.1.5. SEE ALSO
+
+8.6.1.6. LICENSE
+
+8.7.
+
+transparent_recall
+
+8.7.1. TRANSPARENT_RECALL
+
+8.7.1.1. SYNOPSIS
+
+8.7.1.2. DESCRIPTION
+
+8.7.1.3. OPTION SUMMARY
+
+8.7.1.3.1. OPTIONS
+
+8.7.1.4. CONFIGURATION
+
+8.7.1.5. TRANSPARENT RECALL POLICY
+
+8.7.1.5.1. Adjusting the transparent recall queue
+
+8.7.1.5.2. WARNING
+
+8.7.1.6. TROUBLESHOOTING
+
+8.7.2. AVAILABILITY
+
+8.7.2.1. SEE ALSO
+
+8.7.2.2. LICENSE
+
+--------------------------------------------------------------------------------
