@@ -10,6 +10,7 @@ __pycache__/
 *.so
 samples/*
 sampleFiles/*
+ngenea_hub_docs/
 
 # Distribution / packaging
 .Python
