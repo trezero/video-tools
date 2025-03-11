@@ -46,6 +46,9 @@ This repository contains a collection of Python scripts designed to facilitate v
 - **mergeCSV.py**: Combines multiple CSV files into a single file
 
 ### Utility Tools
+- **condaCheck.sh**: Checks for conda and Python 3.10 installation on Ubuntu 22 systems
+  - Automatically installs Miniconda and Python 3.10 if not found
+  - Usage: `./condaCheck.sh`
 - **listAllRepos.py**: Fetches a list of GitHub repositories and writes them to a CSV file
 - **llavaVideo.py**: Processes videos for LLaVA model analysis
 - **scrapeAPIandCreateGPTdocs.py**: Generates documentation from API scraping
