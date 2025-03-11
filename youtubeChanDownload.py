@@ -4,7 +4,7 @@ import sys
 import argparse
 
 # Set these variables
-SAVE_PATH = '/mnt/vizhub/media/history/'
+SAVE_PATH = '/mnt/vizhub/media/'
 MAX_DURATION = 20 * 60  # 20 minutes in seconds
 MAX_PAGES = 5
 

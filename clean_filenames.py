@@ -2,8 +2,19 @@ import os
 import re
 
 def clean_filename(filename):
-    # Replace special characters with safe characters
-    return re.sub(r'[^a-zA-Z0-9_.-]', '_', filename)
+    # Split filename into name and extension
+    name_parts = filename.rsplit('.', 1)
+    name = name_parts[0]
+    extension = name_parts[1] if len(name_parts) > 1 else ''
+    
+    # Replace special characters with underscores
+    name = re.sub(r'[^a-zA-Z0-9_-]', '_', name)
+    
+    # Combine name and extension
+    if extension:
+        return f"{name}.{extension}"
+    else:
+        return name
 
 def clean_directory(directory):
     for filename in os.listdir(directory):
