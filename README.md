@@ -45,6 +45,14 @@ This repository contains a collection of Python scripts designed to facilitate v
 - **cleanContacts.py**: Processes and cleans contact information files
 - **mergeCSV.py**: Combines multiple CSV files into a single file
 
+### System Administration Tools
+- **genRemoteSSHKey.py**: Generates SSH keys for remote systems and updates local SSH config for passwordless authentication
+  - Works on both Windows and Linux host systems
+  - Connect to remote Linux systems and generate SSH keys
+  - Options to use existing SSH keys or create new connection-specific keys
+  - Automatically updates local SSH config file for easy connections
+  - Usage: `python genRemoteSSHKey.py`
+
 ### Utility Tools
 - **condaCheck.sh**: Checks for conda and Python 3.10 installation on Ubuntu 22 systems
   - Automatically installs Miniconda and Python 3.10 if not found
@@ -63,6 +71,7 @@ Before running these scripts, you need to have Python installed on your system a
 - `ffmpeg-python`
 - `numpy`
 - `pandas`
+- `paramiko` (required for genRemoteSSHKey.py)
 
 You can install the required packages using pip:
 ```bash

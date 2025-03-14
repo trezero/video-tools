@@ -4,6 +4,7 @@ genRemoteSSHKey.py - Generate SSH keys for remote systems and update local SSH c
 
 This script connects to a remote Linux system, generates SSH keys, and updates
 the local SSH config file to enable passwordless authentication.
+Works from both Windows and Linux host systems.
 """
 
 import os
@@ -12,6 +13,7 @@ import subprocess
 import getpass
 import paramiko
 import re
+import platform
 from pathlib import Path
 
 def get_home_directory():
@@ -26,16 +28,30 @@ def ensure_ssh_directory(home_dir):
         os.makedirs(ssh_dir, mode=0o700)
     return ssh_dir
 
+def is_windows():
+    """Check if the system is Windows."""
+    return platform.system().lower() == 'windows'
+
+def normalize_path_for_platform(path):
+    """Normalize path based on the platform."""
+    if is_windows():
+        # Windows might need backslashes in some contexts
+        return path.replace('/', '\\')
+    return path
+
 def update_ssh_config(ssh_dir, connection_name, hostname, username, identity_file):
     """Update SSH config file with new connection details."""
     config_file = os.path.join(ssh_dir, "config")
+    
+    # Normalize identity file path for platform
+    platform_identity_file = normalize_path_for_platform(identity_file)
     
     # Create config entry
     config_entry = f"""
 Host {connection_name}
     HostName {hostname}
     User {username}
-    IdentityFile {identity_file}
+    IdentityFile {platform_identity_file}
 """
     
     # Check if config file exists and if the host is already defined
@@ -60,7 +76,11 @@ Host {connection_name}
             f.write(config_entry.lstrip())
         
         # Set proper permissions
-        os.chmod(config_file, 0o600)
+        try:
+            # This might fail on Windows
+            os.chmod(config_file, 0o600)
+        except:
+            print("Note: Could not set file permissions on Windows. Ensure your SSH config file is secured.")
     
     print(f"SSH config updated for {connection_name}")
 
@@ -74,49 +94,88 @@ def generate_remote_key(hostname, username, password, connection_name):
         client.connect(hostname, username=username, password=password)
         
         # Generate key on remote system
-        print("Generating SSH key on remote system...")
+        print("Checking SSH directory on remote system...")
         stdin, stdout, stderr = client.exec_command("mkdir -p ~/.ssh && chmod 700 ~/.ssh")
         stdout.channel.recv_exit_status()
         
         # Check if key already exists
         stdin, stdout, stderr = client.exec_command("ls ~/.ssh/id_rsa")
         if stdout.channel.recv_exit_status() == 0:
-            overwrite = input("SSH key already exists on remote system. Overwrite? (y/n): ")
-            if overwrite.lower() != 'y':
+            print("SSH key already exists on remote system.")
+            choice = input("Options:\n1. Use existing SSH key\n2. Generate a new key named after connection\n3. Abort operation\nEnter choice (1-3): ")
+            
+            if choice == '1':
+                print("Using existing SSH key...")
+                # Get public key
+                stdin, stdout, stderr = client.exec_command("cat ~/.ssh/id_rsa.pub")
+                remote_public_key = stdout.read().decode().strip()
+                
+                # Get private key
+                stdin, stdout, stderr = client.exec_command("cat ~/.ssh/id_rsa")
+                remote_private_key = stdout.read().decode()
+                
+                client.close()
+                return remote_public_key, remote_private_key
+            elif choice == '2':
+                print(f"Generating new key named after connection: {connection_name}...")
+                # Generate new key with connection name
+                key_filename = f"id_{connection_name}"
+                stdin, stdout, stderr = client.exec_command(f"ssh-keygen -t rsa -N '' -f ~/.ssh/{key_filename}")
+                stdout.channel.recv_exit_status()
+                
+                # Get public key
+                stdin, stdout, stderr = client.exec_command(f"cat ~/.ssh/{key_filename}.pub")
+                remote_public_key = stdout.read().decode().strip()
+                
+                # Get private key
+                stdin, stdout, stderr = client.exec_command(f"cat ~/.ssh/{key_filename}")
+                remote_private_key = stdout.read().decode()
+                
+                client.close()
+                return remote_public_key, remote_private_key, key_filename
+            else:
                 print("Aborting operation.")
                 client.close()
                 return None
-        
-        # Generate new key
-        stdin, stdout, stderr = client.exec_command("ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa")
-        stdout.channel.recv_exit_status()
-        
-        # Get public key
-        stdin, stdout, stderr = client.exec_command("cat ~/.ssh/id_rsa.pub")
-        remote_public_key = stdout.read().decode().strip()
-        
-        # Get private key
-        stdin, stdout, stderr = client.exec_command("cat ~/.ssh/id_rsa")
-        remote_private_key = stdout.read().decode()
-        
-        # Close connection
-        client.close()
-        
-        return remote_public_key, remote_private_key
+        else:
+            # No existing key found, generate a new one with the connection name
+            print(f"Generating new SSH key with name: id_{connection_name}...")
+            key_filename = f"id_{connection_name}"
+            stdin, stdout, stderr = client.exec_command(f"ssh-keygen -t rsa -N '' -f ~/.ssh/{key_filename}")
+            stdout.channel.recv_exit_status()
+            
+            # Get public key
+            stdin, stdout, stderr = client.exec_command(f"cat ~/.ssh/{key_filename}.pub")
+            remote_public_key = stdout.read().decode().strip()
+            
+            # Get private key
+            stdin, stdout, stderr = client.exec_command(f"cat ~/.ssh/{key_filename}")
+            remote_private_key = stdout.read().decode()
+            
+            client.close()
+            return remote_public_key, remote_private_key, key_filename
     
     except Exception as e:
         print(f"Error connecting to remote system: {e}")
         return None
 
-def save_keys_locally(ssh_dir, connection_name, public_key, private_key):
+def save_keys_locally(ssh_dir, connection_name, public_key, private_key, key_filename=None):
     """Save the retrieved keys to local system."""
-    # Create identity file path (using Windows-style path for compatibility)
-    identity_file = os.path.join(ssh_dir, f"id_{connection_name}")
+    # Create identity file path
+    if key_filename:
+        identity_file = os.path.join(ssh_dir, key_filename)
+    else:
+        identity_file = os.path.join(ssh_dir, f"id_{connection_name}")
     
     # Save private key
     with open(identity_file, 'w') as f:
         f.write(private_key)
-    os.chmod(identity_file, 0o600)
+    
+    # Set permissions (might fail on Windows)
+    try:
+        os.chmod(identity_file, 0o600)
+    except:
+        print("Note: Could not set file permissions on Windows. Ensure your private key file is secured.")
     
     # Save public key
     with open(f"{identity_file}.pub", 'w') as f:
@@ -128,6 +187,7 @@ def save_keys_locally(ssh_dir, connection_name, public_key, private_key):
 def main():
     """Main function to run the script."""
     print("=== Remote SSH Key Generator ===")
+    print(f"Running on: {platform.system()}")
     
     # Get connection details
     hostname = input("Enter remote IP address: ")
@@ -144,15 +204,18 @@ def main():
     if not key_data:
         sys.exit(1)
     
-    public_key, private_key = key_data
-    
-    # Save keys locally
-    identity_file = save_keys_locally(ssh_dir, connection_name, public_key, private_key)
+    # Check if we have a key filename returned (for new keys)
+    if len(key_data) == 3:
+        public_key, private_key, key_filename = key_data
+        # Save keys locally
+        identity_file = save_keys_locally(ssh_dir, connection_name, public_key, private_key, key_filename)
+    else:
+        public_key, private_key = key_data
+        # Save keys locally
+        identity_file = save_keys_locally(ssh_dir, connection_name, public_key, private_key)
     
     # Update SSH config
-    # Use Windows-style path for the identity file in the config
-    windows_identity_file = identity_file.replace('/', '\\')
-    update_ssh_config(ssh_dir, connection_name, hostname, username, windows_identity_file)
+    update_ssh_config(ssh_dir, connection_name, hostname, username, identity_file)
     
     print(f"\nSetup complete! You can now connect using: ssh {connection_name}")
 
